@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-mode">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Correlação - Email Analyzer PRO</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-tertiary: #adb5bd;
+            --border-color: #dee2e6;
+            --accent-primary: #4361ee;
+            --accent-secondary: #3a56d4;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .dark-mode {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2d2d2d;
+            --bg-card: #1e1e1e;
+            --text-primary: #f8f9fa;
+            --text-secondary: #adb5bd;
+            --text-tertiary: #6c757d;
+            --border-color: #404040;
+            --accent-primary: #5a6ff0;
+            --accent-secondary: #6b85ff;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1850px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header - Mesmo menu do logs.html */
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--accent-primary);
+        }
+
+        .nav-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .theme-toggle {
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .connection-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .connection-status.connected {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        .action-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        /* Stats Dashboard */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-primary);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Charts */
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .chart-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-action-btn {
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chart-action-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .chart-container {
+            padding: 20px;
+            height: 300px;
+            position: relative;
+        }
+
+        /* Mini Cards */
+        .mini-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .mini-card {
+            background: var(--bg-card);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .mini-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        .mini-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .mini-card-title {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .mini-card-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .mini-card-progress {
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .mini-card-progress-bar {
+            height: 100%;
+            border-radius: 2px;
+        }
+
+        /* Tables */
+        .table-section {
+            margin-bottom: 24px;
+        }
+
+        .table-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .table-scroll {
+            min-width: 100%;
+        }
+
+        .table-scroll table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        .table-scroll th {
+            padding: 14px 16px;
+            text-align: left;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+            background: var(--bg-card);
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+
+        .table-scroll td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .table-scroll tbody tr {
+            transition: background 0.1s ease;
+        }
+
+        .table-scroll tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        /* Domain Matrix */
+        .domain-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .domain-cell {
+            background: var(--bg-card);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .domain-cell:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        .domain-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .domain-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .domain-stats {
+            display: flex;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .domain-stat {
+            padding: 3px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .domain-stat.count {
+            background: rgba(67, 97, 238, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .domain-activity {
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .domain-activity-bar {
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        /* Heatmap */
+        .heatmap-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 2px;
+            margin-top: 16px;
+        }
+
+        .heatmap-cell {
+            height: 20px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .heatmap-cell[data-intensity="0"] { background: var(--bg-tertiary); }
+        .heatmap-cell[data-intensity="1"] { background: rgba(40, 167, 69, 0.2); }
+        .heatmap-cell[data-intensity="2"] { background: rgba(40, 167, 69, 0.4); }
+        .heatmap-cell[data-intensity="3"] { background: rgba(40, 167, 69, 0.6); }
+        .heatmap-cell[data-intensity="4"] { background: rgba(40, 167, 69, 0.8); }
+        .heatmap-cell[data-intensity="5"] { background: var(--success); }
+
+        .heatmap-labels {
+            display: grid;
+            grid-template-columns: repeat(24, 1fr);
+            gap: 2px;
+            margin-top: 8px;
+        }
+
+        .heatmap-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Loader */
+        .loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            color: var(--text-secondary);
+        }
+
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            max-width: 200px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .header-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .mini-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 8px;
+            }
+            
+            .action-btn {
+                min-width: auto;
+                white-space: nowrap;
+            }
+            
+            .stats-dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .domain-matrix {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .theme-toggle {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card {
+                padding: 16px;
+            }
+            
+            .stat-value {
+                font-size: 24px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Utility Classes */
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+        .text-info { color: var(--info); }
+        .text-accent { color: var(--accent-primary); }
+
+        .bg-success { background: var(--success); }
+        .bg-warning { background: var(--warning); }
+        .bg-danger { background: var(--danger); }
+        .bg-accent { background: var(--accent-primary); }
+
+        .font-mono {
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header - Mesmo menu do logs.html -->
+        <header class="header">
+            <div class="header-top">
+                <div class="logo">
+                    <div style="width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div>
+                        <h1> Correlacionamento</h1>
+                        <p>E-mail Intelligence</p>
+                    </div>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="/" class="nav-btn">
+                        <i class="fas fa-list"></i>
+                        Logs
+                    </a>
+                    <a href="/correlation" class="nav-btn active">
+                        <i class="fas fa-project-diagram"></i>
+                        Correlação
+                    </a>
+                    <a href="/upload" class="nav-btn">
+                        <i class="fas fa-upload"></i>
+                        Upload
+                    </a>
+                </div>
+                
+                <div class="header-controls">
+                    <div class="theme-toggle" id="theme-toggle">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                        <span id="theme-text">Dark Mode</span>
+                    </div>
+                    
+                    <div id="connection-status" class="connection-status disconnected">
+                        <i class="fas fa-circle" style="font-size: 8px;"></i>
+                        Desconectado
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="action-btn active" onclick="setTimeRange('today')">
+                    <i class="fas fa-calendar-day"></i>
+                    Hoje
+                </button>
+                <button class="action-btn" onclick="setTimeRange('7d')">
+                    <i class="fas fa-calendar-week"></i>
+                    7 Dias
+                </button>
+                <button class="action-btn" onclick="setTimeRange('30d')">
+                    <i class="fas fa-calendar-alt"></i>
+                    30 Dias
+                </button>
+                <button class="action-btn" onclick="setTimeRange('90d')">
+                    <i class="fas fa-chart-line"></i>
+                    90 Dias
+                </button>
+                <button class="action-btn" onclick="exportData()">
+                    <i class="fas fa-download"></i>
+                    Exportar
+                </button>
+                <button class="action-btn" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                    Atualizar
+                </button>
+            </div>
+
+            <!-- Stats Dashboard -->
+            <div class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-emails">0</div>
+                    <div class="stat-label">Total de Emails</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-domains">0</div>
+                    <div class="stat-label">Domínios Ativos</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-spf">0%</div>
+                    <div class="stat-label">SPF Pass Rate</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-dkim">0%</div>
+                    <div class="stat-label">DKIM Pass Rate</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-attachments">0</div>
+                    <div class="stat-label">Total Anexos</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-urls">0</div>
+                    <div class="stat-label">Total URLs</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard">
+            <!-- Left Column -->
+            <div>
+                <!-- Activity Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            <i class="fas fa-chart-line"></i>
+                            Atividade por Hora
+                        </div>
+                        <div class="chart-actions">
+                            <button class="chart-action-btn" onclick="toggleChartType('activity')">
+                                <i class="fas fa-exchange-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top Senders Table -->
+                <div class="table-section">
+                    <div class="table-card">
+                        <div class="table-header">
+                            <div class="table-title">
+                                <i class="fas fa-crown"></i>
+                                Top Remetentes
+                            </div>
+                            <button class="chart-action-btn" onclick="sortTable('senders', 'count')">
+                                <i class="fas fa-sort-amount-down"></i>
+                            </button>
+                        </div>
+                        <div class="table-container">
+                            <div class="table-scroll">
+                                <table id="top-senders-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Domínio</th>
+                                            <th>Emails</th>
+                                            <th>Anexos</th>
+                                            <th>URLs</th>
+                                            <th>Último Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Data will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <!-- Mini Cards -->
+                <div class="mini-cards">
+                    <div class="mini-card">
+                        <div class="mini-card-header">
+                            <div class="mini-card-title">Pico de Atividade</div>
+                        </div>
+                        <div class="mini-card-value" id="mini-peak-hour">00:00</div>
+                        <div class="mini-card-progress">
+                            <div class="mini-card-progress-bar" id="mini-peak-bar" style="width: 0%; background: var(--accent-primary);"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mini-card">
+                        <div class="mini-card-header">
+                            <div class="mini-card-title">Emails no Pico</div>
+                        </div>
+                        <div class="mini-card-value" id="mini-peak-count">0</div>
+                        <div class="mini-card-progress">
+                            <div class="mini-card-progress-bar" id="mini-peak-bar2" style="width: 0%; background: var(--success);"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mini-card">
+                        <div class="mini-card-header">
+                            <div class="mini-card-title">Média por Hora</div>
+                        </div>
+                        <div class="mini-card-value" id="mini-hour-avg">0</div>
+                        <div class="mini-card-progress">
+                            <div class="mini-card-progress-bar" id="mini-hour-bar" style="width: 0%; background: var(--warning);"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mini-card">
+                        <div class="mini-card-header">
+                            <div class="mini-card-title">Atividade Total</div>
+                        </div>
+                        <div class="mini-card-value" id="mini-total-activity">0</div>
+                        <div class="mini-card-progress">
+                            <div class="mini-card-progress-bar" id="mini-total-bar" style="width: 0%; background: var(--info);"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain Matrix -->
+                <div class="domain-matrix" style="margin-top: 20px;" id="domain-matrix">
+                    <!-- Domains will be loaded here -->
+                </div>
+
+                <!-- Heatmap -->
+                <div class="heatmap-container">
+                    <div class="chart-title">
+                        <i class="fas fa-fire"></i>
+                        Heatmap de Atividade
+                    </div>
+                    <div class="heatmap-grid" id="heatmap">
+                        <!-- Heatmap cells will be generated here -->
+                    </div>
+                    <div class="heatmap-labels" id="heatmap-labels">
+                        <!-- Labels will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Domain Relations Table -->
+        <div class="table-section">
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-title">
+                        <i class="fas fa-project-diagram"></i>
+                        Relações entre Domínios
+                    </div>
+                    <button class="chart-action-btn" onclick="exportRelations()">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+                <div class="table-container">
+                    <div class="table-scroll">
+                        <table id="domain-relations-table">
+                            <thead>
+                                <tr>
+                                    <th>Origem</th>
+                                    <th>Destino</th>
+                                    <th>Frequência</th>
+                                    <th>Última Interação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="loader" style="display: none;">
+            <div class="loader-spinner"></div>
+            <p>Processando dados...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <i class="fas fa-chart-bar"></i>
+            <h3>Nenhum dado disponível</h3>
+            <p>Processe alguns emails para ver as análises de correlação</p>
+            <button class="action-btn" onclick="refreshData()" style="margin-top: 20px;">
+                <i class="fas fa-sync-alt"></i>
+                Tentar Novamente
+            </button>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        // Configurações globais
+        const CONFIG = {
+            refreshInterval: 30000, // 30 segundos
+            maxDomains: 6,
+            maxSenders: 15,
+            maxRelations: 20
+        };
+
+        // Estado global
+        const state = {
+            timeRange: '7d',
+            data: null,
+            lastUpdate: null,
+            charts: {},
+            isLoading: false
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('📊 Correlação PRO iniciada');
+            
+            setupTheme();
+            connectWebSocket();
+            setupEventListeners();
+            
+            // Carregar dados iniciais
+            await loadCorrelationData();
+            
+            // Iniciar auto-refresh
+            startAutoRefresh();
+        });
+
+        // Configurar tema
+        function setupTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                enableDarkMode();
+            }
+            
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark-mode')) {
+                enableLightMode();
+            } else {
+                enableDarkMode();
+            }
+        }
+
+        function enableDarkMode() {
+            document.documentElement.classList.add('dark-mode');
+            document.getElementById('theme-icon').className = 'fas fa-sun';
+            document.getElementById('theme-text').textContent = 'Light Mode';
+            localStorage.setItem('theme', 'dark');
+        }
+
+        function enableLightMode() {
+            document.documentElement.classList.remove('dark-mode');
+            document.getElementById('theme-icon').className = 'fas fa-moon';
+            document.getElementById('theme-text').textContent = 'Dark Mode';
+            localStorage.setItem('theme', 'light');
+        }
+
+        // Conectar WebSocket
+        function connectWebSocket() {
+            try {
+                const socket = io();
+                
+                socket.on('connect', () => {
+                    console.log('Conectado ao servidor');
+                    updateConnectionStatus(true);
+                });
+                
+                socket.on('disconnect', () => {
+                    console.log('Desconectado do servidor');
+                    updateConnectionStatus(false);
+                });
+                
+                socket.on('connect_error', (error) => {
+                    console.log('Erro de conexão:', error);
+                    updateConnectionStatus(false);
+                });
+                
+                socket.on('new_email', (data) => {
+                    console.log('Novo email recebido:', data);
+                    // Recarregar dados se necessário
+                    if (state.timeRange === 'today') {
+                        loadCorrelationData();
+                    }
+                });
+                
+                socket.on('connected', (data) => {
+                    console.log('Servidor conectado:', data.message);
+                });
+                
+            } catch (error) {
+                console.error('Erro ao conectar WebSocket:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connection-status');
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                statusEl.innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Conectado';
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                statusEl.innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Desconectado';
+            }
+        }
+
+        // Configurar eventos
+        function setupEventListeners() {
+            // Tooltip
+            document.addEventListener('mousemove', (e) => {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY + 10) + 'px';
+            });
+
+            // Heatmap hover
+            document.addEventListener('mouseover', (e) => {
+                if (e.target.classList.contains('heatmap-cell') && e.target.dataset.tooltip) {
+                    const tooltip = document.getElementById('tooltip');
+                    tooltip.textContent = e.target.dataset.tooltip;
+                    tooltip.style.opacity = '1';
+                }
+            });
+
+            document.addEventListener('mouseout', () => {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.style.opacity = '0';
+            });
+        }
+
+        // Carregar dados de correlação
+        async function loadCorrelationData() {
+            if (state.isLoading) return;
+            
+            state.isLoading = true;
+            showLoader();
+            
+            try {
+                console.log('📡 Carregando dados de correlação...');
+                
+                const days = getDaysFromRange();
+                const response = await fetch(`/api/correlation?days=${days}`);
+                
+                console.log('📊 Resposta da API:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('📦 Dados recebidos:', result);
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Erro ao carregar dados');
+                }
+                
+                if (!result.correlation) {
+                    throw new Error('Estrutura de dados inválida');
+                }
+                
+                state.data = result.correlation;
+                state.lastUpdate = new Date();
+                
+                // Processar dados
+                updateStats(result.correlation);
+                renderCharts(result.correlation);
+                renderTables(result.correlation);
+                renderMiniCards(result.correlation);
+                renderDomainMatrix(result.correlation);
+                renderHeatmap(result.correlation);
+                
+                // Esconder estado vazio
+                document.getElementById('empty-state').style.display = 'none';
+                
+                console.log('✅ Dados carregados com sucesso!');
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados:', error);
+                showEmptyState(error.message);
+            } finally {
+                state.isLoading = false;
+                hideLoader();
+            }
+        }
+
+        // Atualizar estatísticas
+        function updateStats(correlation) {
+            console.log('📈 Atualizando estatísticas...', correlation);
+            
+            const senders = correlation.sender_patterns || [];
+            const relations = correlation.domain_relations || [];
+            const hourly = correlation.hourly_patterns || [];
+            
+            // Calcular totais
+            const totalEmails = senders.reduce((sum, s) => sum + (s.total_emails || 0), 0);
+            const uniqueDomains = new Set(senders.map(s => s.domain).filter(Boolean)).size;
+            
+            // Taxas de autenticação
+            const spfRate = senders.length > 0 
+                ? senders.reduce((sum, s) => sum + (s.spf_pass_rate || 0), 0) / senders.length 
+                : 0;
+            
+            const dkimRate = senders.length > 0 
+                ? senders.reduce((sum, s) => sum + (s.dkim_pass_rate || 0), 0) / senders.length 
+                : 0;
+            
+            // Totais de anexos e URLs
+            const totalAttachments = senders.reduce((sum, s) => sum + (s.total_attachments || 0), 0);
+            const totalUrls = senders.reduce((sum, s) => sum + (s.total_urls || 0), 0);
+            
+            console.log('📊 Estatísticas calculadas:', {
+                totalEmails, uniqueDomains, spfRate, dkimRate, totalAttachments, totalUrls
+            });
+            
+            // Atualizar cards principais
+            document.getElementById('stat-emails').textContent = formatNumber(totalEmails);
+            document.getElementById('stat-domains').textContent = formatNumber(uniqueDomains);
+            document.getElementById('stat-spf').textContent = spfRate.toFixed(1) + '%';
+            document.getElementById('stat-dkim').textContent = dkimRate.toFixed(1) + '%';
+            document.getElementById('stat-attachments').textContent = formatNumber(totalAttachments);
+            document.getElementById('stat-urls').textContent = formatNumber(totalUrls);
+        }
+
+        // Renderizar gráficos
+        function renderCharts(correlation) {
+            renderActivityChart(correlation);
+        }
+
+        function renderActivityChart(correlation) {
+            const hourly = correlation.hourly_patterns || [];
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            
+            // Limpar gráfico anterior
+            if (state.charts.activity) {
+                state.charts.activity.destroy();
+            }
+            
+            // Preparar dados
+            const labels = Array.from({length: 24}, (_, i) => 
+                `${i.toString().padStart(2, '0')}:00`
+            );
+            
+            const data = labels.map(label => {
+                const hour = label.split(':')[0];
+                const hourData = hourly.find(h => h.hour === hour);
+                return hourData ? hourData.count : 0;
+            });
+            
+            console.log('📊 Dados do gráfico:', { labels, data, hourly });
+            
+            // Se não houver dados, mostrar mensagem
+            if (data.every(d => d === 0)) {
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary');
+                ctx.textAlign = 'center';
+                ctx.fillText('Nenhuma atividade registrada', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+            
+            state.charts.activity = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Emails por Hora',
+                        data: data,
+                        backgroundColor: 'rgba(67, 97, 238, 0.6)',
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(222, 226, 230, 0.2)'
+                            },
+                            ticks: {
+                                color: '#6c757d'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6c757d',
+                                maxRotation: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Renderizar tabelas
+        function renderTables(correlation) {
+            renderTopSenders(correlation);
+            renderDomainRelations(correlation);
+        }
+
+        function renderTopSenders(correlation) {
+            const senders = correlation.sender_patterns || [];
+            const tbody = document.querySelector('#top-senders-table tbody');
+            
+            console.log('📋 Renderizando top senders:', senders);
+            
+            // Ordenar por total de emails
+            const sortedSenders = [...senders]
+                .sort((a, b) => (b.total_emails || 0) - (a.total_emails || 0))
+                .slice(0, CONFIG.maxSenders);
+            
+            if (sortedSenders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            Nenhum remetente encontrado
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = sortedSenders.map(sender => {
+                return `
+                    <tr>
+                        <td>
+                            <div class="truncate" style="max-width: 200px;" title="${escapeHtml(sender.domain || 'Desconhecido')}">
+                                <strong>${escapeHtml(sender.domain || 'Desconhecido')}</strong>
+                            </div>
+                        </td>
+                        <td><strong>${sender.total_emails || 0}</strong></td>
+                        <td>${sender.total_attachments || 0}</td>
+                        <td>${sender.total_urls || 0}</td>
+                        <td>${formatDate(sender.last_email)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderDomainRelations(correlation) {
+            const relations = correlation.domain_relations || [];
+            const tbody = document.querySelector('#domain-relations-table tbody');
+            
+            console.log('🔗 Renderizando relações de domínio:', relations);
+            
+            const sortedRelations = [...relations]
+                .sort((a, b) => (b.frequency || 0) - (a.frequency || 0))
+                .slice(0, CONFIG.maxRelations);
+            
+            if (sortedRelations.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            Nenhuma relação encontrada
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = sortedRelations.map(rel => {
+                return `
+                    <tr>
+                        <td>
+                            <div class="truncate" style="max-width: 150px;" title="${escapeHtml(rel.from || 'Desconhecido')}">
+                                ${escapeHtml(rel.from || 'Desconhecido')}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="truncate" style="max-width: 150px;" title="${escapeHtml(rel.to || 'Desconhecido')}">
+                                ${escapeHtml(rel.to || 'Desconhecido')}
+                            </div>
+                        </td>
+                        <td><strong>${rel.frequency || 0}</strong></td>
+                        <td>${formatDate(rel.last_email)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Renderizar mini cards
+        function renderMiniCards(correlation) {
+            const hourly = correlation.hourly_patterns || [];
+            const senders = correlation.sender_patterns || [];
+            
+            console.log('🃏 Renderizando mini cards:', { senders: senders.length, hourly: hourly.length });
+            
+            // Pico de atividade
+            if (hourly.length > 0) {
+                const peakHourData = hourly.reduce((prev, current) => 
+                    (prev.count > current.count) ? prev : current
+                );
+                
+                document.getElementById('mini-peak-hour').textContent = `${peakHourData.hour}:00`;
+                document.getElementById('mini-peak-count').textContent = peakHourData.count;
+                
+                const maxCount = Math.max(...hourly.map(h => h.count));
+                const peakPercentage = maxCount > 0 ? (peakHourData.count / maxCount) * 100 : 0;
+                document.getElementById('mini-peak-bar').style.width = `${peakPercentage}%`;
+                document.getElementById('mini-peak-bar2').style.width = `${peakPercentage}%`;
+            } else {
+                document.getElementById('mini-peak-hour').textContent = 'N/A';
+                document.getElementById('mini-peak-count').textContent = '0';
+                document.getElementById('mini-peak-bar').style.width = '0%';
+                document.getElementById('mini-peak-bar2').style.width = '0%';
+            }
+            
+            // Média por hora
+            if (hourly.length > 0) {
+                const totalEmails = hourly.reduce((sum, h) => sum + h.count, 0);
+                const hourAvg = Math.round(totalEmails / 24);
+                document.getElementById('mini-hour-avg').textContent = hourAvg;
+                const avgPercentage = hourAvg > 0 ? Math.min((hourAvg / 100) * 100, 100) : 0;
+                document.getElementById('mini-hour-bar').style.width = `${avgPercentage}%`;
+            } else {
+                document.getElementById('mini-hour-avg').textContent = '0';
+                document.getElementById('mini-hour-bar').style.width = '0%';
+            }
+            
+            // Atividade total
+            const totalActivity = senders.reduce((sum, s) => sum + (s.total_emails || 0), 0);
+            document.getElementById('mini-total-activity').textContent = formatNumber(totalActivity);
+            const totalPercentage = Math.min((totalActivity / 1000) * 100, 100);
+            document.getElementById('mini-total-bar').style.width = `${totalPercentage}%`;
+        }
+
+        // Renderizar matriz de domínios
+        function renderDomainMatrix(correlation) {
+            const senders = correlation.sender_patterns || [];
+            const container = document.getElementById('domain-matrix');
+            
+            console.log('🏢 Renderizando matriz de domínios:', senders.length);
+            
+            const topDomains = [...senders]
+                .sort((a, b) => (b.total_emails || 0) - (a.total_emails || 0))
+                .slice(0, CONFIG.maxDomains);
+            
+            if (topDomains.length === 0) {
+                container.innerHTML = `
+                    <div class="domain-cell" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <i class="fas fa-globe" style="font-size: 24px; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p style="color: var(--text-secondary);">Nenhum domínio encontrado</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = topDomains.map(domain => {
+                const maxEmails = Math.max(...topDomains.map(d => d.total_emails || 0));
+                const activityPercentage = maxEmails > 0 ? ((domain.total_emails || 0) / maxEmails) * 100 : 0;
+                
+                return `
+                    <div class="domain-cell">
+                        <div class="domain-header">
+                            <div class="domain-name" title="${escapeHtml(domain.domain || 'Desconhecido')}">
+                                ${escapeHtml(domain.domain || 'Desconhecido')}
+                            </div>
+                            <div class="domain-stats">
+                                <span class="domain-stat count">${domain.total_emails || 0}</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">
+                            ${domain.total_attachments || 0} anexos · ${domain.total_urls || 0} URLs
+                        </div>
+                        <div class="domain-activity">
+                            <div class="domain-activity-bar" style="width: ${activityPercentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Renderizar heatmap
+        function renderHeatmap(correlation) {
+            const hourly = correlation.hourly_patterns || [];
+            const container = document.getElementById('heatmap');
+            const labelsContainer = document.getElementById('heatmap-labels');
+            
+            console.log('🔥 Renderizando heatmap:', hourly.length);
+            
+            // Se não houver dados suficientes
+            if (hourly.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <i class="fas fa-fire" style="font-size: 24px; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p>Sem dados para o heatmap</p>
+                    </div>
+                `;
+                labelsContainer.innerHTML = '';
+                return;
+            }
+            
+            // Gerar heatmap 24x7 (horas x dias)
+            let html = '';
+            let labels = '';
+            
+            const maxCount = Math.max(...hourly.map(h => h.count));
+            
+            // Simular dados para 7 dias (para demonstração)
+            for (let day = 0; day < 7; day++) {
+                for (let hour = 0; hour < 24; hour++) {
+                    const hourStr = hour.toString().padStart(2, '0');
+                    const hourData = hourly.find(h => h.hour === hourStr);
+                    const count = hourData ? hourData.count : 0;
+                    
+                    // Calcular intensidade (0-5)
+                    const intensity = maxCount > 0 ? Math.floor((count / maxCount) * 5) : 0;
+                    
+                    html += `
+                        <div class="heatmap-cell" 
+                             data-intensity="${intensity}"
+                             data-tooltip="${['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][day]} ${hourStr}:00 - ${count} emails">
+                        </div>
+                    `;
+                }
+            }
+            
+            // Gerar labels
+            for (let hour = 0; hour < 24; hour++) {
+                labels += `<div class="heatmap-label">${hour.toString().padStart(2, '0')}</div>`;
+            }
+            
+            container.innerHTML = html;
+            labelsContainer.innerHTML = labels;
+        }
+
+        // Funções auxiliares
+        function getDaysFromRange() {
+            const ranges = {
+                'today': 1,
+                '7d': 7,
+                '30d': 30,
+                '90d': 90
+            };
+            return ranges[state.timeRange] || 7;
+        }
+
+        function setTimeRange(range) {
+            // Atualizar botões ativos
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            state.timeRange = range;
+            loadCorrelationData();
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num.toString();
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'N/A';
+                
+                const now = new Date();
+                const diffMs = now - date;
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                
+                if (diffHours < 24) {
+                    return `${diffHours}h atrás`;
+                } else if (diffHours < 48) {
+                    return 'Ontem';
+                } else {
+                    return date.toLocaleDateString('pt-BR');
+                }
+            } catch {
+                return 'N/A';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Controles
+        function refreshData() {
+            loadCorrelationData();
+        }
+
+        function exportData() {
+            if (!state.data) {
+                alert('Nenhum dado disponível para exportar');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(state.data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `correlation-${new Date().toISOString().slice(0,10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function exportRelations() {
+            if (!state.data || !state.data.domain_relations) {
+                alert('Nenhuma relação disponível para exportar');
+                return;
+            }
+            
+            const csvContent = [
+                ['De', 'Para', 'Frequência', 'Última Interação'],
+                ...state.data.domain_relations.map(rel => [
+                    rel.from || '',
+                    rel.to || '',
+                    rel.frequency || 0,
+                    formatDate(rel.last_email)
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `domain-relations-${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        function sortTable(tableId, by) {
+            console.log(`Ordenando tabela ${tableId} por ${by}`);
+            loadCorrelationData(); // Recarregar para reordenar
+        }
+
+        function toggleChartType(chartId) {
+            console.log(`Alternando tipo do gráfico ${chartId}`);
+        }
+
+        function showLoader() {
+            document.getElementById('loader').style.display = 'flex';
+            document.getElementById('empty-state').style.display = 'none';
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+        }
+
+        function showEmptyState(message) {
+            const emptyState = document.getElementById('empty-state');
+            emptyState.style.display = 'block';
+            
+            if (message) {
+                const messageEl = emptyState.querySelector('p');
+                if (messageEl) {
+                    messageEl.textContent = `Erro: ${message}`;
+                }
+            }
+        }
+
+        function startAutoRefresh() {
+            setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    refreshData();
+                }
+            }, CONFIG.refreshInterval);
+        }
+    </script>
+</body>
+</html>

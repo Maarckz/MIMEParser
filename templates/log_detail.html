@@ -1,0 +1,3052 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light-mode">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Email - Email Analyzer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-tertiary: #adb5bd;
+            --border-color: #dee2e6;
+            --accent-primary: #4361ee;
+            --accent-secondary: #3a56d4;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .dark-mode {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2d2d2d;
+            --bg-card: #1e1e1e;
+            --text-primary: #f8f9fa;
+            --text-secondary: #adb5bd;
+            --text-tertiary: #6c757d;
+            --border-color: #404040;
+            --accent-primary: #5a6ff0;
+            --accent-secondary: #6b85ff;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--accent-primary);
+        }
+
+        .nav-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .theme-toggle {
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .connection-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .connection-status.connected {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        /* Log Info */
+        .log-info {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 32px;
+            box-shadow: var(--shadow);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .info-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .info-value.email {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        /* Content Sections */
+        .content-section {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 32px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--accent-primary);
+        }
+
+        /* Authentication */
+        .auth-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .auth-card {
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .auth-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .auth-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .auth-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .auth-icon.pass { background: linear-gradient(135deg, var(--success), #20c997); }
+        .auth-icon.fail { background: linear-gradient(135deg, var(--danger), #e83e8c); }
+        .auth-icon.present { background: linear-gradient(135deg, var(--info), #17a2b8); }
+        .auth-icon.none { background: linear-gradient(135deg, var(--text-tertiary), #6c757d); }
+
+        .auth-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .auth-status {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .auth-status.pass { background: rgba(40, 167, 69, 0.1); color: var(--success); }
+        .auth-status.fail { background: rgba(220, 53, 69, 0.1); color: var(--danger); }
+        .auth-status.present { background: rgba(23, 162, 184, 0.1); color: var(--info); }
+        .auth-status.none { background: rgba(108, 117, 125, 0.1); color: var(--text-tertiary); }
+
+        .auth-details {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .auth-detail {
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .auth-detail-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .auth-detail-value {
+            color: var(--text-primary);
+            word-break: break-all;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            background: var(--bg-tertiary);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Delivery Chain */
+        .delivery-chain-container {
+            background: var(--bg-tertiary);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .delivery-chain-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .delivery-chain-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .delivery-chain-count {
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .delivery-chain-list {
+            position: relative;
+            padding-left: 60px;
+        }
+
+        .delivery-chain-list::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 20px;
+            bottom: 20px;
+            width: 3px;
+            background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary));
+            border-radius: 3px;
+        }
+
+        .delivery-hop {
+            position: relative;
+            margin-bottom: 30px;
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .delivery-hop:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-primary);
+        }
+
+        .delivery-hop:last-child {
+            margin-bottom: 0;
+        }
+
+        .hop-number {
+            position: absolute;
+            left: -50px;
+            top: 24px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+            z-index: 2;
+            border: 3px solid var(--bg-tertiary);
+        }
+
+        .hop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hop-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .hop-protocol {
+            padding: 4px 12px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+
+        .hop-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .hop-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .hop-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hop-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-family: 'Monaco', 'Consolas', monospace;
+            word-break: break-word;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        .hop-raw {
+            margin-top: 16px;
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            color: var(--text-primary);
+            word-break: break-word;
+            display: none;
+        }
+
+        .show-raw-btn {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .show-raw-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        /* Network Analysis */
+        .network-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .network-section {
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .ip-list, .domain-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .ip-tag, .domain-tag {
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-radius: 12px;
+            font-size: 13px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .ip-tag.private {
+            border-left-color: var(--warning);
+        }
+
+        .ip-tag.local {
+            border-left-color: var(--info);
+        }
+
+        /* Content Analysis */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .content-card {
+            padding: 24px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .content-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 8px;
+        }
+
+        .content-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .url-list {
+            margin-top: 20px;
+        }
+
+        .url-item {
+            padding: 16px;
+            margin-bottom: 12px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            word-break: break-all;
+        }
+
+        .url-item a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .url-item a:hover {
+            text-decoration: underline;
+        }
+
+        .url-length {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        /* Entities */
+        .entities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .entity-card {
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .entity-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .entity-count {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 8px;
+        }
+
+        .entity-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .entity-list {
+            margin-top: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .entity-item {
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            word-break: break-all;
+            text-align: left;
+        }
+
+        /* Forensic */
+        .hash-container {
+            background: var(--bg-tertiary);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .hash-item {
+            margin-bottom: 24px;
+        }
+
+        .hash-label {
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hash-value {
+            color: var(--text-primary);
+            word-break: break-all;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 12px;
+        }
+
+        /* JSON Viewer */
+        .json-viewer {
+            background: var(--bg-tertiary);
+            padding: 24px;
+            border-radius: 16px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error */
+        .error {
+            text-align: center;
+            padding: 60px;
+            color: var(--danger);
+        }
+
+        /* Security Indicators */
+        .security-indicators {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .security-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .security-badge.high { background: rgba(220, 53, 69, 0.1); color: var(--danger); }
+        .security-badge.medium { background: rgba(255, 193, 7, 0.1); color: var(--warning); }
+        .security-badge.low { background: rgba(40, 167, 69, 0.1); color: var(--success); }
+
+        /* DNS/WHOIS Results */
+        .dns-whois-container {
+            background: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 12px;
+        }
+
+        .lookup-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .lookup-result-card {
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .lookup-result-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lookup-result-content {
+            font-size: 12px;
+        }
+
+        .lookup-result-item {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .lookup-result-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .lookup-result-value {
+            color: var(--text-primary);
+            word-break: break-all;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 11px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .action-btn.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-badge.success { background: rgba(40, 167, 69, 0.1); color: var(--success); }
+        .status-badge.error { background: rgba(220, 53, 69, 0.1); color: var(--danger); }
+        .status-badge.warning { background: rgba(255, 193, 7, 0.1); color: var(--warning); }
+        .status-badge.info { background: rgba(23, 162, 184, 0.1); color: var(--info); }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .header-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .delivery-chain-list {
+                padding-left: 40px;
+            }
+            
+            .delivery-chain-list::before {
+                left: 20px;
+            }
+            
+            .hop-number {
+                left: -35px;
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .tabs {
+                justify-content: flex-start;
+            }
+            
+            .tab {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .content-section {
+                padding: 20px;
+            }
+            
+            .auth-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .network-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .entities-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .logo h1 {
+                font-size: 24px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .entities-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .delivery-chain-list {
+                padding-left: 20px;
+            }
+            
+            .delivery-chain-list::before {
+                display: none;
+            }
+            
+            .hop-number {
+                position: relative;
+                left: 0;
+                top: 0;
+                margin-bottom: 16px;
+            }
+            
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .theme-toggle {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-top">
+                <div class="logo">
+                    <div style="width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div>
+                        <h1>Email Detalhes</h1>
+                        <p>E-mail Intelligence</p>
+                    </div>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="/" class="nav-btn">
+                        <i class="fas fa-list"></i>
+                        Logs
+                    </a>
+                    <a href="/correlation" class="nav-btn">
+                        <i class="fas fa-project-diagram"></i>
+                        Correlação
+                    </a>
+                    <a href="/upload" class="nav-btn">
+                        <i class="fas fa-upload"></i>
+                        Upload
+                    </a>
+                </div>
+                
+                <div class="header-controls">
+                    <div class="theme-toggle" id="theme-toggle">
+                        <i class="fas fa-moon" id="theme-icon"></i>
+                        <span id="theme-text">Dark Mode</span>
+                    </div>
+                    
+                    <div id="connection-status" class="connection-status disconnected">
+                        <i class="fas fa-circle" style="font-size: 8px;"></i>
+                        Desconectado
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Carregando detalhes do email...</p>
+            </div>
+            
+            <!-- Error -->
+            <div id="error" class="error" style="display: none;">
+                <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                <h3>Erro ao carregar email</h3>
+                <p id="error-message"></p>
+                <a href="/" class="nav-btn" style="margin-top: 20px;">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar para lista
+                </a>
+            </div>
+            
+            <!-- Email Info (será preenchido via JS) -->
+            <div id="email-info" style="display: none;"></div>
+        </header>
+
+        <!-- Tabs (só aparece quando email carregado) -->
+        <div id="tabs-container" style="display: none;">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('authentication')">
+                    <i class="fas fa-shield-alt"></i>
+                    Autenticação
+                </button>
+                <button class="tab" onclick="showTab('security-analysis')">
+                    <i class="fas fa-search-plus"></i>
+                    Análise Segurança
+                </button>
+                <button class="tab" onclick="showTab('attachments')">
+                    <i class="fas fa-paperclip"></i>
+                    Anexos
+                </button>
+                <button class="tab" onclick="showTab('delivery')">
+                    <i class="fas fa-exchange-alt"></i>
+                    Cadeia de Entrega
+                </button>
+                <button class="tab" onclick="showTab('network')">
+                    <i class="fas fa-network-wired"></i>
+                    Análise de Rede
+                </button>
+                <button class="tab" onclick="showTab('content')">
+                    <i class="fas fa-file-alt"></i>
+                    Análise de Conteúdo
+                </button>
+                <button class="tab" onclick="showTab('entities')">
+                    <i class="fas fa-search"></i>
+                    Entidades Extraídas
+                </button>
+                <button class="tab" onclick="showTab('security')">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Segurança
+                </button>
+                <button class="tab" onclick="showTab('forensic')">
+                    <i class="fas fa-fingerprint"></i>
+                    Dados Forenses
+                </button>
+                <button class="tab" onclick="showTab('raw')">
+                    <i class="fas fa-code"></i>
+                    Dados Completos
+                </button>
+            </div>
+
+            <!-- Content Sections -->
+            <div id="content-sections">
+                <!-- Authentication -->
+                <section id="authentication" class="content-section active">
+                    <div class="section-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Autenticação de Email
+                    </div>
+                    <div class="auth-grid" id="auth-grid-content"></div>
+                </section>
+
+                <!-- Security Analysis -->
+                <section id="security-analysis" class="content-section">
+                    <div class="section-title">
+                        <i class="fas fa-search-plus"></i>
+                        Análise de Segurança Avançada
+                    </div>
+                    <div id="security-analysis-content">
+                        <div style="text-align: center; padding: 40px;">
+                            <div class="spinner" style="margin: 0 auto 20px;"></div>
+                            <p>Carregando análise de segurança...</p>
+                            <button class="action-btn" onclick="loadSecurityAnalysis()" style="margin-top: 20px;">
+                                <i class="fas fa-redo"></i>
+                                Carregar Análise
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Attachments -->
+                <section id="attachments" class="content-section">
+                    <div class="section-title">
+                        <i class="fas fa-paperclip"></i>
+                        Anexos
+                    </div>
+                    <div id="attachments-content">
+                        <div style="text-align: center; padding: 40px;">
+                            <div class="spinner" style="margin: 0 auto 20px;"></div>
+                            <p>Carregando informações dos anexos...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Delivery Chain -->
+                <section id="delivery" class="content-section">
+                    <div class="section-title">
+                        <i class="fas fa-exchange-alt"></i>
+                        Cadeia de Entrega
+                    </div>
+                    <div id="delivery-chain-content"></div>
+                </section>
+
+                <!-- Network Analysis -->
+                <section id="network" class="content-section">
+                    <div class="section-title">
+                        <i class="fas fa-network-wired"></i>
+                        Análise de Rede
+                    </div>
+                    <div class="network-grid" id="network-analysis-content"></div>
+                </section>
+
+                <!-- Content Analysis -->
+                <section id="content" class="content-section">
+                    <div class="section-title">
+                        <i class="fas fa-file-alt"></i>
+                        Análise de Conteúdo
+                    </div>
+                    <div id="content-analysis-content"></div>
+                </section>
+
+                <!-- Entities -->
+                <section id="entities" class="content-section">
+                    <div class="section-title">
+                        <i class="fas fa-search"></i>
+                        Entidades Extraídas
+                    </div>
+                    <div class="entities-grid" id="entities-content"></div>
+                </section>
+
+                <!-- Security -->
+                <section id="security" class="content-section">
+                    <div class="section-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Indicadores de Segurança
+                    </div>
+                    <div id="security-content"></div>
+                </section>
+
+                <!-- Forensic -->
+                <section id="forensic" class="content-section">
+                    <div class="section-title">
+                        <i class="fas fa-fingerprint"></i>
+                        Dados Forenses
+                    </div>
+                    <div id="forensic-content"></div>
+                </section>
+
+                <!-- Raw Data -->
+                <section id="raw" class="content-section">
+                    <div class="section-title">
+                        <i class="fas fa-code"></i>
+                        Dados Completos (JSON)
+                    </div>
+                    <div class="json-viewer" id="raw-json-content"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para exibir alertas -->
+    <div class="modal-overlay" id="alert-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;">
+        <div class="modal" style="background: var(--bg-card); border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; box-shadow: var(--shadow-hover); transform: translateY(-20px); transition: transform 0.3s ease;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="modal-title" style="font-size: 20px; font-weight: 600; color: var(--text-primary);">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--warning); margin-right: 10px;"></i>
+                    Alerta
+                </div>
+                <button class="modal-close" onclick="hideAlert()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+            </div>
+            <div class="modal-body" style="margin-bottom: 30px; color: var(--text-secondary);">
+                <p id="alert-message"></p>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button class="action-btn" onclick="hideAlert()" style="background: var(--bg-tertiary);">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        // Obter ID do email da URL
+        const emailId = window.location.pathname.split('/').pop();
+        let isDarkMode = false;
+        let emailData = null;
+        let socket;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Detalhes do email iniciados');
+            
+            // Configurar tema
+            setupTheme();
+            
+            // Conectar WebSocket
+            connectWebSocket();
+            
+            // Carregar dados do email
+            loadEmailData();
+            
+            // Configurar eventos
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        });
+
+        // Configurar tema
+        function setupTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                enableDarkMode();
+            }
+        }
+
+        // Alternar tema
+        function toggleTheme() {
+            if (isDarkMode) {
+                enableLightMode();
+            } else {
+                enableDarkMode();
+            }
+        }
+
+        function enableDarkMode() {
+            document.documentElement.classList.add('dark-mode');
+            document.getElementById('theme-icon').className = 'fas fa-sun';
+            document.getElementById('theme-text').textContent = 'Light Mode';
+            isDarkMode = true;
+            localStorage.setItem('theme', 'dark');
+        }
+
+        function enableLightMode() {
+            document.documentElement.classList.remove('dark-mode');
+            document.getElementById('theme-icon').className = 'fas fa-moon';
+            document.getElementById('theme-text').textContent = 'Dark Mode';
+            isDarkMode = false;
+            localStorage.setItem('theme', 'light');
+        }
+
+        // Conectar WebSocket
+        function connectWebSocket() {
+            try {
+                socket = io();
+                
+                socket.on('connect', () => {
+                    console.log('Conectado ao servidor');
+                    updateConnectionStatus(true);
+                });
+                
+                socket.on('disconnect', () => {
+                    console.log('Desconectado do servidor');
+                    updateConnectionStatus(false);
+                });
+                
+                socket.on('connect_error', (error) => {
+                    console.log('Erro de conexão:', error);
+                    updateConnectionStatus(false);
+                });
+                
+                socket.on('email_updated', (data) => {
+                    console.log('Email atualizado:', data);
+                    if (data.email_id == emailId) {
+                        showAlert('Email atualizado. Recarregando...', 'info');
+                        setTimeout(() => {
+                            loadEmailData();
+                        }, 1000);
+                    }
+                });
+                
+                socket.on('connected', (data) => {
+                    console.log('Servidor conectado:', data.message);
+                });
+                
+            } catch (error) {
+                console.error('Erro ao conectar WebSocket:', error);
+                updateConnectionStatus(false);
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connection-status');
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                statusEl.innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Conectado';
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                statusEl.innerHTML = '<i class="fas fa-circle" style="font-size: 8px;"></i> Desconectado';
+            }
+        }
+
+        // Mudar tab
+        function showTab(tabId) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Add active class to selected tab and section
+            const tabButton = document.querySelector(`[onclick="showTab('${tabId}')"]`);
+            if (tabButton) tabButton.classList.add('active');
+            
+            const section = document.getElementById(tabId);
+            if (section) section.classList.add('active');
+            
+            // Scroll suave para a seção
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Carregar dados do email
+        async function loadEmailData() {
+            try {
+                console.log(`Carregando email ID: ${emailId}`);
+                const response = await fetch(`/api/emails/${emailId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Erro ao carregar email');
+                }
+                
+                emailData = result.email;
+                console.log('Email carregado:', emailData);
+                
+                // Esconder loading, mostrar conteúdo
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('tabs-container').style.display = 'block';
+                
+                renderEmailDetails();
+                
+            } catch (error) {
+                console.error('Erro ao carregar email:', error);
+                showError(error.message);
+            }
+        }
+
+        // Mostrar erro
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error-message').textContent = message;
+        }
+
+        // Mostrar alerta
+        function showAlert(message, type = 'info') {
+            const alertModal = document.getElementById('alert-modal');
+            const alertMessage = document.getElementById('alert-message');
+            
+            alertMessage.textContent = message;
+            
+            // Adicionar classe baseada no tipo
+            alertModal.classList.remove('info', 'warning', 'error', 'success');
+            alertModal.classList.add(type);
+            
+            alertModal.style.opacity = '1';
+            alertModal.style.visibility = 'visible';
+            
+            const modal = alertModal.querySelector('.modal');
+            modal.style.transform = 'translateY(0)';
+        }
+
+        function hideAlert() {
+            const alertModal = document.getElementById('alert-modal');
+            alertModal.style.opacity = '0';
+            alertModal.style.visibility = 'hidden';
+            
+            const modal = alertModal.querySelector('.modal');
+            modal.style.transform = 'translateY(-20px)';
+        }
+
+        // Renderizar detalhes do email
+        function renderEmailDetails() {
+            if (!emailData) return;
+            
+            const metadata = emailData.metadata || {};
+            const analysis = emailData.analysis || {};
+            const auth = analysis.authentication || {};
+            const network = analysis.network_analysis || {};
+            const content = analysis.content_analysis || {};
+            const entities = analysis.entities || {};
+            const forensic = analysis.forensic || {};
+            const security = analysis.security_indicators || {};
+            const normalized = emailData.normalized_data || {};
+            const rawData = emailData.raw_data || {};
+            const deliveryChain = rawData.delivery_chain || [];
+            const senderDisplay = analysis.sender_display_info || {};
+            
+            // Atualizar cabeçalho com informações expandidas
+            document.getElementById('email-info').style.display = 'block';
+            document.getElementById('email-info').innerHTML = `
+                <div class="log-info fade-in">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">De</div>
+                            <div class="info-value email">${escapeHtml(metadata.from || 'N/A')}</div>
+                            ${senderDisplay.display_name ? `
+                                <div style="margin-top: 8px;">
+                                    <div class="info-label" style="font-size: 11px;">Display Name</div>
+                                    <div class="info-value" style="font-size: 12px;">${escapeHtml(senderDisplay.display_name)}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Sender</div>
+                            <div class="info-value email">${escapeHtml(metadata.sender || 'None')}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Para</div>
+                            <div class="info-value email">${escapeHtml(metadata.to || 'N/A')}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">CC</div>
+                            <div class="info-value email">${escapeHtml(metadata.cc || 'None')}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">In-Reply-To</div>
+                            <div class="info-value email">${escapeHtml(metadata.in_reply_to || 'None')}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Data/Hora</div>
+                            <div class="info-value">${escapeHtml(formatDateTime(metadata.date) || 'N/A')}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Reply-To</div>
+                            <div class="info-value email">${escapeHtml(metadata.reply_to || 'None')}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Message-ID</div>
+                            <div class="info-value" style="font-family: 'Monaco', 'Consolas', monospace;">${escapeHtml(metadata.message_id || 'N/A')}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Return-Path</div>
+                            <div class="info-value email">${escapeHtml(metadata.return_path || 'N/A')}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Originating IP</div>
+                            <div class="info-value" style="font-family: 'Monaco', 'Consolas', monospace;">${escapeHtml(network.originating_ip || 'None')}</div>
+                            ${network.originating_ip ? `
+                                <button class="action-btn" onclick="lookupRDNS('${network.originating_ip}')" style="margin-top: 8px; padding: 4px 8px; font-size: 11px;">
+                                    <i class="fas fa-search"></i> rDNS Lookup
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">rDNS</div>
+                            <div class="info-value" style="font-family: 'Monaco', 'Consolas', monospace;">
+                                ${network.reverse_dns && network.reverse_dns[network.originating_ip] ? 
+                                    escapeHtml(network.reverse_dns[network.originating_ip]) : 'None'}
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Tamanho</div>
+                            <div class="info-value">${metadata.size_bytes ? formatBytes(metadata.size_bytes) : 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Preencher cada seção
+            renderAuthentication(auth);
+            renderDeliveryChain(deliveryChain);
+            renderNetworkAnalysis(network);
+            renderContentAnalysis(content);
+            renderEntities(entities);
+            renderSecurityAnalysis(security);
+            renderForensicData(forensic);
+            renderRawData();
+            
+            // Carregar análises adicionais em background
+            setTimeout(() => {
+                loadSecurityAnalysis();
+                loadAttachmentsAnalysis();
+            }, 500);
+        }
+
+        // Renderizar autenticação
+        function renderAuthentication(auth) {
+            const authGrid = document.getElementById('auth-grid-content');
+            if (!authGrid) return;
+            
+            const protocols = [
+                {
+                    name: 'SPF',
+                    data: auth.spf,
+                    icon: 'fas fa-globe',
+                    description: 'Sender Policy Framework'
+                },
+                {
+                    name: 'DKIM',
+                    data: auth.dkim,
+                    icon: 'fas fa-key',
+                    description: 'DomainKeys Identified Mail'
+                },
+                {
+                    name: 'DMARC',
+                    data: auth.dmarc,
+                    icon: 'fas fa-shield-alt',
+                    description: 'Domain-based Message Authentication'
+                },
+                {
+                    name: 'ARC',
+                    data: auth.arc,
+                    icon: 'fas fa-link',
+                    description: 'Authenticated Received Chain'
+                }
+            ];
+            
+            authGrid.innerHTML = protocols.map(protocol => {
+                const data = protocol.data || {};
+                const status = data.status || 'none';
+                const statusClass = status === 'pass' ? 'pass' : 
+                                  status === 'fail' ? 'fail' : 
+                                  status === 'present' ? 'present' : 'none';
+                const statusText = status === 'pass' ? 'PASS' : 
+                                 status === 'fail' ? 'FAIL' : 
+                                 status === 'present' ? 'PRESENT' : 'NONE';
+                
+                return `
+                    <div class="auth-card fade-in">
+                        <div class="auth-header">
+                            <div class="auth-icon ${statusClass}">
+                                <i class="${protocol.icon}"></i>
+                            </div>
+                            <div>
+                                <div class="auth-title">${protocol.name}</div>
+                                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                                    ${protocol.description}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <span class="auth-status ${statusClass}">
+                                ${statusText}
+                            </span>
+                        </div>
+                        
+                        <div class="auth-details">
+                            ${data.result ? `
+                                <div class="auth-detail">
+                                    <span class="auth-detail-label">Resultado:</span>
+                                    <span class="auth-detail-value">${escapeHtml(data.result)}</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${data.domain ? `
+                                <div class="auth-detail">
+                                    <span class="auth-detail-label">Domínio:</span>
+                                    <span class="auth-detail-value">${escapeHtml(data.domain)}</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${data.selector ? `
+                                <div class="auth-detail">
+                                    <span class="auth-detail-label">Selector:</span>
+                                    <span class="auth-detail-value">${escapeHtml(data.selector)}</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${data.policy ? `
+                                <div class="auth-detail">
+                                    <span class="auth-detail-label">Política:</span>
+                                    <span class="auth-detail-value">${escapeHtml(data.policy)}</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${Array.isArray(data.details) && data.details.length > 0 ? `
+                                <div class="auth-detail">
+                                    <span class="auth-detail-label">Detalhes:</span>
+                                    <div class="auth-detail-value" style="max-height: 150px; overflow-y: auto;">
+                                        ${data.details.map(detail => {
+                                            if (typeof detail === 'object') {
+                                                return `<div style="margin-bottom: 8px;">
+                                                    <strong>${escapeHtml(detail.header || 'Header')}:</strong><br>
+                                                    <span style="font-size: 11px;">${escapeHtml(detail.value || '')}</span>
+                                                </div>`;
+                                            }
+                                            return `<div style="margin-bottom: 4px;">${escapeHtml(String(detail))}</div>`;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Renderizar cadeia de entrega
+        function renderDeliveryChain(deliveryChain) {
+            const deliveryContainer = document.getElementById('delivery-chain-content');
+            if (!deliveryContainer) return;
+            
+            // Verificar se deliveryChain é um array
+            const chain = Array.isArray(deliveryChain) ? deliveryChain : [];
+            
+            if (chain.length === 0) {
+                deliveryContainer.innerHTML = `
+                    <div class="delivery-chain-container">
+                        <div class="delivery-chain-header">
+                            <div class="delivery-chain-title">
+                                <i class="fas fa-exchange-alt"></i>
+                                CADEIA DE ENTREGA
+                            </div>
+                            <div class="delivery-chain-count">
+                                0 Hops
+                            </div>
+                        </div>
+                        <p style="color: var(--text-secondary); text-align: center; padding: 40px;">
+                            Nenhuma informação de cadeia de entrega disponível
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Ordenar por hop_number (do menor para o maior - do primeiro para o último)
+            const sortedChain = [...chain].sort((a, b) => {
+                const hopA = a.hop_number || 0;
+                const hopB = b.hop_number || 0;
+                return hopA - hopB; // Ordem crescente
+            });
+            
+            let html = `
+                <div class="delivery-chain-container fade-in">
+                    <div class="delivery-chain-header">
+                        <div class="delivery-chain-title">
+                            <i class="fas fa-exchange-alt"></i>
+                            CADEIA DE ENTREGA
+                        </div>
+                        <div class="delivery-chain-count">
+                            ${chain.length} Hops
+                        </div>
+                    </div>
+                    
+                    <div class="delivery-chain-list">
+            `;
+            
+            html += sortedChain.map((hop, index) => {
+                const hopData = hop || {};
+                const hopNumber = hopData.hop_number || (chain.length - index);
+                const fromHostname = hopData.from_hostname || hopData.from_ip || 'Desconhecido';
+                const byHostname = hopData.by_hostname || hopData.by_ip || 'Desconhecido';
+                const protocol = hopData.protocol || 'N/A';
+                const forAddress = hopData.for_address || 'N/A';
+                const timestamp = hopData.timestamp || 'N/A';
+                const rawInfo = hopData.raw || 'N/A';
+                
+                // Determinar número de hop para exibição (reverso)
+                const displayHopNumber = chain.length - index;
+                
+                return `
+                    <div class="delivery-hop">
+                        <div class="hop-number">${displayHopNumber}</div>
+                        
+                        <div class="hop-header">
+                            <div class="hop-title">Hop ${displayHopNumber}</div>
+                            <div class="hop-protocol">${escapeHtml(protocol)}</div>
+                        </div>
+                        
+                        <div class="hop-content">
+                            <div class="hop-item">
+                                <div class="hop-label">De</div>
+                                <div class="hop-value">${escapeHtml(fromHostname)}</div>
+                            </div>
+                            
+                            <div class="hop-item">
+                                <div class="hop-label">Por</div>
+                                <div class="hop-value">${escapeHtml(byHostname)}</div>
+                            </div>
+                            
+                            ${forAddress !== 'N/A' ? `
+                                <div class="hop-item">
+                                    <div class="hop-label">Para</div>
+                                    <div class="hop-value">${escapeHtml(forAddress)}</div>
+                                </div>
+                            ` : ''}
+                            
+                            ${timestamp !== 'N/A' ? `
+                                <div class="hop-item">
+                                    <div class="hop-label">Timestamp</div>
+                                    <div class="hop-value">${escapeHtml(formatDateTime(timestamp))}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <button class="show-raw-btn" onclick="toggleRawHop(${index})">
+                            <i class="fas fa-code"></i>
+                            Mostrar Raw
+                        </button>
+                        
+                        <div class="hop-raw" id="hop-raw-${index}">
+                            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">
+                                RAW HEADER:
+                            </div>
+                            ${escapeHtml(rawInfo)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            deliveryContainer.innerHTML = html;
+        }
+
+        // Função para mostrar/ocultar raw de hop
+        window.toggleRawHop = function(index) {
+            const rawElement = document.getElementById(`hop-raw-${index}`);
+            const button = rawElement.previousElementSibling;
+            
+            if (rawElement.style.display === 'block') {
+                rawElement.style.display = 'none';
+                button.innerHTML = '<i class="fas fa-code"></i> Mostrar Raw';
+            } else {
+                rawElement.style.display = 'block';
+                button.innerHTML = '<i class="fas fa-times"></i> Ocultar Raw';
+            }
+        };
+
+        // Renderizar análise de rede
+        function renderNetworkAnalysis(network) {
+            const networkContent = document.getElementById('network-analysis-content');
+            if (!networkContent) return;
+            
+            const ips = network.ips || [];
+            const domains = network.domains || [];
+            const servers = network.servers || [];
+            
+            let html = '';
+            
+            // IPs
+            html += `
+                <div class="network-section">
+                    <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">
+                        Endereços IP Encontrados
+                        <span style="font-size: 14px; color: var(--text-secondary);">(${ips.length})</span>
+                    </div>
+                    <div class="ip-list">
+                        ${ips.length > 0 ? 
+                            ips.map(ip => {
+                                const ipData = ip || {};
+                                const address = ipData.address || 'N/A';
+                                const scope = ipData.scope || '';
+                                const typeClass = scope === 'PRIVADO' ? 'private' : scope === 'INTERNO' ? 'local' : '';
+                                
+                                return `
+                                    <div class="ip-tag ${typeClass}">
+                                        ${escapeHtml(address)}
+                                        ${scope ? ` (${scope})` : ''}
+                                    </div>
+                                `;
+                            }).join('') :
+                            '<p style="color: var(--text-secondary);">Nenhum IP encontrado</p>'
+                        }
+                    </div>
+                </div>
+            `;
+            
+            // Domínios
+            html += `
+                <div class="network-section">
+                    <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">
+                        Domínios Identificados
+                        <span style="font-size: 14px; color: var(--text-secondary);">(${domains.length})</span>
+                    </div>
+                    <div class="domain-list">
+                        ${domains.length > 0 ? 
+                            domains.map(domain => `
+                                <div class="domain-tag">
+                                    ${escapeHtml(domain)}
+                                    <div class="action-buttons" style="margin-top: 8px;">
+                                        <button class="action-btn" onclick="lookupDomainDNS('${domain}')" style="padding: 4px 8px; font-size: 10px;">
+                                            <i class="fas fa-globe"></i> DNS
+                                        </button>
+                                        <button class="action-btn" onclick="lookupDomainWHOIS('${domain}')" style="padding: 4px 8px; font-size: 10px;">
+                                            <i class="fas fa-search"></i> WHOIS
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('') :
+                            '<p style="color: var(--text-secondary);">Nenhum domínio encontrado</p>'
+                        }
+                    </div>
+                </div>
+            `;
+            
+            // Servidores
+            if (servers.length > 0) {
+                html += `
+                    <div class="network-section">
+                        <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">
+                            Servidores
+                            <span style="font-size: 14px; color: var(--text-secondary);">(${servers.length})</span>
+                        </div>
+                        <div>
+                            ${servers.map(server => {
+                                const serverData = server || {};
+                                return `
+                                    <div style="padding: 12px; margin-bottom: 8px; background: var(--bg-tertiary); border-radius: 8px;">
+                                        <div style="font-weight: 500; color: var(--text-primary);">${escapeHtml(serverData.hostname || 'N/A')}</div>
+                                        ${serverData.ip ? `<div style="font-size: 12px; color: var(--text-secondary);">IP: ${escapeHtml(serverData.ip)}</div>` : ''}
+                                        ${serverData.protocol ? `<div style="font-size: 12px; color: var(--text-secondary);">Protocolo: ${escapeHtml(serverData.protocol)}</div>` : ''}
+                                        ${serverData.hop ? `<div style="font-size: 12px; color: var(--text-secondary);">Hop: ${serverData.hop}</div>` : ''}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            networkContent.innerHTML = html;
+        }
+
+        // Renderizar análise de conteúdo
+        function renderContentAnalysis(content) {
+            const contentDiv = document.getElementById('content-analysis-content');
+            if (!contentDiv) return;
+            
+            const urls = content.urls || [];
+            const attachments = content.attachments || [];
+            const urlList = Array.isArray(urls) ? urls : [];
+            const attachmentList = Array.isArray(attachments) ? attachments : [];
+            
+            let html = `
+                <div class="content-grid" style="margin-bottom: 32px;">
+                    <div class="content-card">
+                        <div class="content-value">${content.text_parts || 0}</div>
+                        <div class="content-label">Partes de Texto</div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="content-value">${content.html_parts || 0}</div>
+                        <div class="content-label">Partes HTML</div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="content-value">${attachmentList.length}</div>
+                        <div class="content-label">Anexos</div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="content-value">${urlList.length}</div>
+                        <div class="content-label">URLs Encontradas</div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="content-value">${content.character_count ? content.character_count.toLocaleString() : 0}</div>
+                        <div class="content-label">Caracteres</div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="content-value">${content.word_count ? content.word_count.toLocaleString() : 0}</div>
+                        <div class="content-label">Palavras</div>
+                    </div>
+                </div>
+            `;
+            
+            // Anexos
+            if (attachmentList.length > 0) {
+                html += `
+                    <div style="margin-top: 32px;">
+                        <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">
+                            Anexos (${attachmentList.length})
+                        </div>
+                        <div class="url-list">
+                            ${attachmentList.map(attachment => {
+                                const attachmentData = attachment || {};
+                                const filename = attachmentData.filename || 'Sem nome';
+                                const size = attachmentData.size_bytes || 0;
+                                const sha256 = attachmentData.sha256 || 'N/A';
+                                
+                                return `
+                                    <div class="url-item">
+                                        <div style="font-weight: 500; color: var(--text-primary); margin-bottom: 8px;">
+                                            <i class="fas fa-file"></i> ${escapeHtml(filename)}
+                                        </div>
+                                        <div style="font-size: 12px; color: var(--text-secondary);">
+                                            <div>Tamanho: ${formatBytes(size)}</div>
+                                            <div style="font-family: 'Monaco', 'Consolas', monospace; font-size: 10px; margin-top: 4px; word-break: break-all;">
+                                                SHA256: ${escapeHtml(sha256)}
+                                            </div>
+                                            <div class="action-buttons" style="margin-top: 8px;">
+                                                <button class="action-btn" onclick="checkVirusTotalFile('${sha256}')" style="padding: 4px 8px; font-size: 10px;">
+                                                    <i class="fas fa-shield-virus"></i> VirusTotal
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // URLs
+            if (urlList.length > 0) {
+                html += `
+                    <div style="margin-top: 32px;">
+                        <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">
+                            URLs Extraídas (${urlList.length})
+                        </div>
+                        <div class="url-list">
+                            ${urlList.map(url => {
+                                const urlStr = typeof url === 'object' ? url.url || '' : url;
+                                return `
+                                    <div class="url-item">
+                                        <a href="${escapeHtml(urlStr)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(urlStr)}">
+                                            ${escapeHtml(urlStr.length > 100 ? urlStr.substring(0, 100) + '...' : urlStr)}
+                                        </a>
+                                        ${urlStr.length ? `
+                                            <div class="url-length">${urlStr.length} caracteres</div>
+                                        ` : ''}
+                                        <div class="action-buttons" style="margin-top: 8px;">
+                                            <button class="action-btn" onclick="lookupURL('${escapeHtml(urlStr)}')" style="padding: 4px 8px; font-size: 10px;">
+                                                <i class="fas fa-search"></i> Analisar URL
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            contentDiv.innerHTML = html;
+        }
+
+        // Renderizar entidades extraídas
+        function renderEntities(entities) {
+            const entitiesDiv = document.getElementById('entities-content');
+            if (!entitiesDiv) return;
+            
+            const entityTypes = [
+                { key: 'emails', label: 'Emails', icon: 'fas fa-envelope' },
+                { key: 'ips', label: 'IPs', icon: 'fas fa-network-wired' },
+                { key: 'domains', label: 'Domínios', icon: 'fas fa-globe' },
+                { key: 'files', label: 'Arquivos', icon: 'fas fa-file' },
+                { key: 'phone_numbers', label: 'Telefones', icon: 'fas fa-phone' },
+                { key: 'credit_cards', label: 'Cartões', icon: 'fas fa-credit-card' },
+                { key: 'social_security', label: 'CPF/CNPJ', icon: 'fas fa-id-card' },
+                { key: 'bitcoin_addresses', label: 'Bitcoin', icon: 'fas fa-coins' }
+            ];
+            
+            entitiesDiv.innerHTML = entityTypes.map(type => {
+                const items = entities[type.key] || [];
+                const itemList = Array.isArray(items) ? items : [];
+                const count = itemList.length;
+                
+                return `
+                    <div class="entity-card fade-in">
+                        <div class="entity-count">${count}</div>
+                        <div class="entity-label">${type.label}</div>
+                        
+                        ${count > 0 ? `
+                            <div class="entity-list">
+                                ${itemList.slice(0, 5).map(item => {
+                                    const itemStr = String(item);
+                                    return `
+                                        <div class="entity-item">
+                                            ${escapeHtml(itemStr)}
+                                            ${type.key === 'ips' ? `
+                                                <button class="action-btn" onclick="lookupRDNS('${itemStr}')" style="margin-top: 4px; padding: 2px 6px; font-size: 9px;">
+                                                    <i class="fas fa-search"></i> rDNS
+                                                </button>
+                                            ` : ''}
+                                            ${type.key === 'domains' ? `
+                                                <div style="display: flex; gap: 4px; margin-top: 4px;">
+                                                    <button class="action-btn" onclick="lookupDomainDNS('${itemStr}')" style="padding: 2px 6px; font-size: 9px;">
+                                                        DNS
+                                                    </button>
+                                                    <button class="action-btn" onclick="lookupDomainWHOIS('${itemStr}')" style="padding: 2px 6px; font-size: 9px;">
+                                                        WHOIS
+                                                    </button>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                                ${count > 5 ? `
+                                    <div class="entity-item" style="text-align: center; color: var(--text-secondary);">
+                                        +${count - 5} mais
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : `
+                            <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 12px;">
+                                Nenhum encontrado
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Renderizar análise de segurança
+        function renderSecurityAnalysis(security) {
+            const securityDiv = document.getElementById('security-content');
+            if (!securityDiv) return;
+            
+            const riskLevel = security.risk_level || 'low';
+            const reputationScore = security.reputation_score || 100;
+            const suspiciousKeywords = security.suspicious_keywords || [];
+            
+            const riskLevelMap = {
+                'high': { text: 'ALTO', color: 'danger', icon: 'fas fa-exclamation-triangle' },
+                'medium': { text: 'MÉDIO', color: 'warning', icon: 'fas fa-exclamation-circle' },
+                'low': { text: 'BAIXO', color: 'success', icon: 'fas fa-check-circle' }
+            };
+            
+            const riskInfo = riskLevelMap[riskLevel] || riskLevelMap.low;
+            
+            let html = `
+                <div class="auth-card fade-in">
+                    <div class="auth-header">
+                        <div class="auth-icon ${riskLevel}" style="background: linear-gradient(135deg, var(--${riskInfo.color}), var(--${riskInfo.color}));">
+                            <i class="${riskInfo.icon}"></i>
+                        </div>
+                        <div>
+                            <div class="auth-title">Nível de Risco</div>
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                                Avaliação de segurança do email
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <span class="security-badge ${riskLevel}">
+                            <i class="${riskInfo.icon}"></i>
+                            RISCO ${riskInfo.text}
+                        </span>
+                    </div>
+                    
+                    <div class="auth-details">
+                        <div class="auth-detail">
+                            <span class="auth-detail-label">Score de Reputação:</span>
+                            <span class="auth-detail-value">${reputationScore}/100</span>
+                        </div>
+                        
+                        <div class="auth-detail">
+                            <span class="auth-detail-label">Nível:</span>
+                            <span class="auth-detail-value">${riskInfo.text}</span>
+                        </div>
+                        
+                        ${suspiciousKeywords.length > 0 ? `
+                            <div class="auth-detail">
+                                <span class="auth-detail-label">Palavras-chave suspeitas:</span>
+                                <span class="auth-detail-value">${escapeHtml(suspiciousKeywords.join(', '))}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            securityDiv.innerHTML = html;
+        }
+
+        // Renderizar dados forenses
+        function renderForensicData(forensic) {
+            const forensicDiv = document.getElementById('forensic-content');
+            if (!forensicDiv) return;
+            
+            const emailHash = forensic.email_complete || {};
+            const parts = forensic.parts || [];
+            const partList = Array.isArray(parts) ? parts : [];
+            
+            let html = `
+                <div class="hash-container fade-in">
+                    <div class="hash-item">
+                        <span class="hash-label">HASH DO E-MAIL COMPLETO</span>
+                        <div class="hash-value">
+                            SHA256: ${escapeHtml(emailHash.sha256 || 'N/A')}
+                        </div>
+                        <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                            ${emailHash.md5 ? `
+                                <div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">MD5</div>
+                                    <div style="font-family: 'Monaco', 'Consolas', monospace; font-size: 12px; word-break: break-all;">${escapeHtml(emailHash.md5)}</div>
+                                </div>
+                            ` : ''}
+                            <div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Tamanho</div>
+                                <div>${emailHash.size_bytes ? formatBytes(emailHash.size_bytes) : 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+            `;
+            
+            if (partList.length > 0) {
+                html += `
+                    <div class="hash-item">
+                        <span class="hash-label">HASHES DAS PARTES (${partList.length})</span>
+                        ${partList.map(part => {
+                            const partData = part || {};
+                            return `
+                                <div style="margin-top: 16px; padding: 16px; background: var(--bg-secondary); border-radius: 8px;">
+                                    <div style="font-weight: 500; color: var(--text-primary); margin-bottom: 8px;">
+                                        ${escapeHtml(partData.filename || 'Parte sem nome')}
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                                        <div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">SHA256</div>
+                                            <div style="font-family: 'Monaco', 'Consolas', monospace; font-size: 12px; word-break: break-all;">
+                                                ${escapeHtml(partData.sha256 || 'N/A')}
+                                            </div>
+                                        </div>
+                                        ${partData.md5 ? `
+                                            <div>
+                                                <div style="font-size: 12px; color: var(--text-secondary);">MD5</div>
+                                                <div style="font-family: 'Monaco', 'Consolas', monospace; font-size: 12px;">${escapeHtml(partData.md5)}</div>
+                                            </div>
+                                        ` : ''}
+                                        <div>
+                                            <div style="font-size: 12px; color: var(--text-secondary);">Tamanho</div>
+                                            <div>${partData.size_bytes ? formatBytes(partData.size_bytes) : 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                    ${partData.sha256 && partData.sha256 !== 'N/A' ? `
+                                        <div class="action-buttons" style="margin-top: 12px;">
+                                            <button class="action-btn" onclick="checkVirusTotalFile('${partData.sha256}')" style="padding: 6px 12px;">
+                                                <i class="fas fa-shield-virus"></i> Verificar no VirusTotal
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            forensicDiv.innerHTML = html;
+        }
+
+        // Renderizar dados brutos
+        function renderRawData() {
+            const rawJson = document.getElementById('raw-json-content');
+            if (!rawJson || !emailData) return;
+            
+            try {
+                rawJson.textContent = JSON.stringify(emailData, null, 2);
+            } catch (error) {
+                rawJson.textContent = 'Erro ao serializar dados do email';
+            }
+        }
+
+        // Carregar análise de segurança
+        async function loadSecurityAnalysis() {
+            try {
+                const securityDiv = document.getElementById('security-analysis-content');
+                securityDiv.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <div class="spinner" style="margin: 0 auto 20px;"></div>
+                        <p>Carregando análise de segurança...</p>
+                    </div>
+                `;
+                
+                const response = await fetch(`/api/emails/${emailId}/security`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    renderSecurityAnalysisContent(result.security_analysis);
+                } else {
+                    renderSecurityAnalysisError(result.error || 'Erro desconhecido');
+                }
+            } catch (error) {
+                renderSecurityAnalysisError(error.message);
+            }
+        }
+
+        // Renderizar análise de segurança
+        function renderSecurityAnalysisContent(securityData) {
+            const securityDiv = document.getElementById('security-analysis-content');
+            if (!securityDiv) return;
+            
+            let html = `
+                <div class="auth-card fade-in">
+                    <div class="auth-header">
+                        <div class="auth-icon" style="background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div>
+                            <div class="auth-title">Análise de Segurança Completa</div>
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                                Verificações DNS, WHOIS, rDNS e mais
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="auth-details">
+            `;
+            
+            // DNS Lookups
+            const dnsLookups = securityData.dns_lookups || {};
+            if (Object.keys(dnsLookups).length > 0) {
+                html += `
+                    <div class="auth-detail">
+                        <span class="auth-detail-label">DNS Lookups:</span>
+                        <div class="lookup-results">
+                `;
+                
+                for (const [domain, dnsInfo] of Object.entries(dnsLookups)) {
+                    if (dnsInfo.error) {
+                        html += `
+                            <div class="lookup-result-card">
+                                <div class="lookup-result-title">
+                                    <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                                    ${escapeHtml(domain)}
+                                </div>
+                                <div class="lookup-result-content">
+                                    <span class="status-badge error">Erro</span>
+                                    <div style="margin-top: 8px; font-size: 11px; color: var(--danger);">
+                                        ${escapeHtml(dnsInfo.error)}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="lookup-result-card">
+                                <div class="lookup-result-title">
+                                    <i class="fas fa-globe" style="color: var(--accent-primary);"></i>
+                                    ${escapeHtml(domain)}
+                                </div>
+                                <div class="lookup-result-content">
+                                    <span class="status-badge success">Sucesso</span>
+                                    
+                                    ${dnsInfo.a_records && dnsInfo.a_records.length > 0 ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">A Records:</span>
+                                            <span class="lookup-result-value">${escapeHtml(dnsInfo.a_records.join(', '))}</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${dnsInfo.mx_records && dnsInfo.mx_records.length > 0 ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">MX Records:</span>
+                                            <span class="lookup-result-value">
+                                                ${dnsInfo.mx_records.map(r => `Pref ${r.preference}: ${r.server}`).join(', ')}
+                                            </span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${dnsInfo.txt_records && dnsInfo.txt_records.length > 0 ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">TXT Records:</span>
+                                            <span class="lookup-result-value">${escapeHtml(dnsInfo.txt_records.join(', '))}</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${dnsInfo.ns_records && dnsInfo.ns_records.length > 0 ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">NS Records:</span>
+                                            <span class="lookup-result-value">${escapeHtml(dnsInfo.ns_records.join(', '))}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                html += `</div></div>`;
+            } else {
+                html += `
+                    <div class="auth-detail">
+                        <span class="auth-detail-label">DNS Lookups:</span>
+                        <span class="auth-detail-value">Nenhum lookup DNS realizado</span>
+                    </div>
+                `;
+            }
+            
+            // WHOIS Lookups
+            const whoisLookups = securityData.whois_lookups || {};
+            if (Object.keys(whoisLookups).length > 0) {
+                html += `
+                    <div class="auth-detail">
+                        <span class="auth-detail-label">WHOIS Lookups:</span>
+                        <div class="lookup-results">
+                `;
+                
+                for (const [domain, whoisInfo] of Object.entries(whoisLookups)) {
+                    if (whoisInfo.error) {
+                        html += `
+                            <div class="lookup-result-card">
+                                <div class="lookup-result-title">
+                                    <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                                    ${escapeHtml(domain)}
+                                </div>
+                                <div class="lookup-result-content">
+                                    <span class="status-badge error">Erro</span>
+                                    <div style="margin-top: 8px; font-size: 11px; color: var(--danger);">
+                                        ${escapeHtml(whoisInfo.error)}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="lookup-result-card">
+                                <div class="lookup-result-title">
+                                    <i class="fas fa-search" style="color: var(--info);"></i>
+                                    ${escapeHtml(domain)}
+                                </div>
+                                <div class="lookup-result-content">
+                                    <span class="status-badge success">Sucesso</span>
+                                    
+                                    ${whoisInfo.registrar ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">Registrar:</span>
+                                            <span class="lookup-result-value">${escapeHtml(whoisInfo.registrar)}</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${whoisInfo.creation_date ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">Criado em:</span>
+                                            <span class="lookup-result-value">${formatDateTime(whoisInfo.creation_date)}</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${whoisInfo.expiration_date ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">Expira em:</span>
+                                            <span class="lookup-result-value">${formatDateTime(whoisInfo.expiration_date)}</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${whoisInfo.name_servers ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">Name Servers:</span>
+                                            <span class="lookup-result-value">
+                                                ${Array.isArray(whoisInfo.name_servers) ? 
+                                                    escapeHtml(whoisInfo.name_servers.join(', ')) : 
+                                                    escapeHtml(String(whoisInfo.name_servers))}
+                                            </span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${whoisInfo.registrant_name ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">Registrante:</span>
+                                            <span class="lookup-result-value">${escapeHtml(whoisInfo.registrant_name)}</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${whoisInfo.status ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">Status:</span>
+                                            <span class="lookup-result-value">${escapeHtml(whoisInfo.status)}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                html += `</div></div>`;
+            } else {
+                html += `
+                    <div class="auth-detail">
+                        <span class="auth-detail-label">WHOIS Lookups:</span>
+                        <span class="auth-detail-value">Nenhum lookup WHOIS realizado</span>
+                    </div>
+                `;
+            }
+            
+            // rDNS Lookups
+            const reverseDns = securityData.reverse_dns || {};
+            if (Object.keys(reverseDns).length > 0) {
+                html += `
+                    <div class="auth-detail">
+                        <span class="auth-detail-label">Reverse DNS (rDNS):</span>
+                        <div class="lookup-results">
+                `;
+                
+                for (const [ip, rdnsInfo] of Object.entries(reverseDns)) {
+                    if (rdnsInfo.error) {
+                        html += `
+                            <div class="lookup-result-card">
+                                <div class="lookup-result-title">
+                                    <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                                    ${escapeHtml(ip)}
+                                </div>
+                                <div class="lookup-result-content">
+                                    <span class="status-badge error">Erro</span>
+                                    <div style="margin-top: 8px; font-size: 11px; color: var(--danger);">
+                                        ${escapeHtml(rdnsInfo.error)}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="lookup-result-card">
+                                <div class="lookup-result-title">
+                                    <i class="fas fa-network-wired" style="color: var(--accent-primary);"></i>
+                                    ${escapeHtml(ip)}
+                                </div>
+                                <div class="lookup-result-content">
+                                    <span class="status-badge success">Sucesso</span>
+                                    
+                                    <div class="lookup-result-item">
+                                        <span class="lookup-result-label">Hostname:</span>
+                                        <span class="lookup-result-value">${escapeHtml(rdnsInfo.hostname || 'Não encontrado')}</span>
+                                    </div>
+                                    
+                                    ${rdnsInfo.aliases && rdnsInfo.aliases.length > 0 ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">Aliases:</span>
+                                            <span class="lookup-result-value">${escapeHtml(rdnsInfo.aliases.join(', '))}</span>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${rdnsInfo.ttl ? `
+                                        <div class="lookup-result-item">
+                                            <span class="lookup-result-label">TTL:</span>
+                                            <span class="lookup-result-value">${rdnsInfo.ttl} segundos</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                html += `</div></div>`;
+            }
+            
+            // Action buttons para novas verificações
+            html += `
+                <div class="auth-detail">
+                    <span class="auth-detail-label">Verificações Adicionais:</span>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="runAllSecurityChecks()">
+                            <i class="fas fa-sync-alt"></i>
+                            Executar Todas as Verificações
+                        </button>
+                        <button class="action-btn" onclick="loadSecurityAnalysis()">
+                            <i class="fas fa-redo"></i>
+                            Recarregar Análise
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            securityDiv.innerHTML = html;
+        }
+
+        function renderSecurityAnalysisError(error) {
+            const securityDiv = document.getElementById('security-analysis-content');
+            securityDiv.innerHTML = `
+                <div class="error" style="padding: 20px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>Erro ao carregar análise de segurança</h3>
+                    <p>${escapeHtml(error)}</p>
+                    <div class="action-buttons" style="margin-top: 20px; justify-content: center;">
+                        <button class="action-btn" onclick="loadSecurityAnalysis()">
+                            <i class="fas fa-redo"></i>
+                            Tentar Novamente
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Carregar análise de anexos
+        async function loadAttachmentsAnalysis() {
+            try {
+                const attachmentsDiv = document.getElementById('attachments-content');
+                attachmentsDiv.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <div class="spinner" style="margin: 0 auto 20px;"></div>
+                        <p>Carregando informações dos anexos...</p>
+                    </div>
+                `;
+                
+                const securityResponse = await fetch(`/api/emails/${emailId}/security`);
+                const securityResult = await securityResponse.json();
+                
+                if (securityResult.success) {
+                    renderAttachmentsContent(securityResult.security_analysis);
+                } else {
+                    renderAttachmentsContentFromLocal();
+                }
+            } catch (error) {
+                renderAttachmentsContentFromLocal();
+            }
+        }
+
+        // Renderizar anexos
+        function renderAttachmentsContent(securityData) {
+            const attachmentsDiv = document.getElementById('attachments-content');
+            if (!attachmentsDiv) return;
+            
+            const attachments = securityData.attachment_details || [];
+            
+            if (attachments.length === 0) {
+                attachmentsDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <i class="fas fa-paperclip" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+                        <h3>Nenhum anexo encontrado</h3>
+                        <p>Este email não contém arquivos anexados.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">
+                    ${attachments.length} anexo(s) encontrado(s)
+                </div>
+            `;
+            
+            attachments.forEach((att, index) => {
+                const filename = att.filename || `attachment_${index + 1}`;
+                const size = att.size_bytes || 0;
+                const fileType = att.file_type || att.content_type || 'Unknown';
+                const md5 = att.md5 || 'N/A';
+                const sha256 = att.sha256 || 'N/A';
+                const sha1 = att.sha_1 || 'N/A';
+                
+                const vtResult = att.virustotal || {};
+                const vtStats = vtResult.last_analysis_stats || {};
+                const malicious = vtStats.malicious || 0;
+                const suspicious = vtStats.suspicious || 0;
+                
+                html += `
+                    <div class="delivery-hop" style="margin-bottom: 20px;">
+                        <div class="hop-header">
+                            <div class="hop-title">
+                                <i class="fas fa-file" style="margin-right: 8px;"></i>
+                                ${escapeHtml(filename)}
+                            </div>
+                            <div class="hop-protocol">${escapeHtml(fileType)}</div>
+                        </div>
+                        
+                        <div class="hop-content">
+                            <div class="hop-item">
+                                <div class="hop-label">Tamanho</div>
+                                <div class="hop-value">${formatBytes(size)}</div>
+                            </div>
+                            
+                            <div class="hop-item">
+                                <div class="hop-label">Tipo</div>
+                                <div class="hop-value">${escapeHtml(fileType)}</div>
+                            </div>
+                            
+                            <div class="hop-item">
+                                <div class="hop-label">MD5</div>
+                                <div class="hop-value" style="font-size: 11px;">${escapeHtml(md5)}</div>
+                            </div>
+                            
+                            <div class="hop-item">
+                                <div class="hop-label">SHA-1</div>
+                                <div class="hop-value" style="font-size: 11px;">${escapeHtml(sha1)}</div>
+                            </div>
+                            
+                            <div class="hop-item">
+                                <div class="hop-label">SHA-256</div>
+                                <div class="hop-value" style="font-size: 11px;">${escapeHtml(sha256)}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- VirusTotal Results -->
+                        ${vtResult && !vtResult.error && !vtResult.configure ? `
+                            <div style="margin-top: 16px; padding: 12px; background: ${malicious > 0 ? 'rgba(220, 53, 69, 0.1)' : suspicious > 0 ? 'rgba(255, 193, 7, 0.1)' : 'rgba(40, 167, 69, 0.1)'}; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-weight: 500; color: var(--text-primary);">
+                                        <i class="fas fa-shield-virus"></i>
+                                        VirusTotal
+                                    </div>
+                                    <div style="display: flex; gap: 12px;">
+                                        <span style="font-size: 12px; color: ${malicious > 0 ? 'var(--danger)' : 'var(--text-secondary)'};">
+                                            <i class="fas fa-skull-crossbones"></i> ${malicious}
+                                        </span>
+                                        <span style="font-size: 12px; color: ${suspicious > 0 ? 'var(--warning)' : 'var(--text-secondary)'};">
+                                            <i class="fas fa-exclamation-triangle"></i> ${suspicious}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-secondary);">
+                                    Última análise: ${vtResult.last_analysis_date ? new Date(vtResult.last_analysis_date * 1000).toLocaleString() : 'N/A'}
+                                </div>
+                                ${vtResult.meaningful_name ? `
+                                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+                                        Nome: ${escapeHtml(vtResult.meaningful_name)}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : vtResult && vtResult.configure ? `
+                            <div style="margin-top: 16px; padding: 12px; background: rgba(255, 193, 7, 0.1); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                                    <div>
+                                        <div style="font-weight: 500; color: var(--text-primary);">VirusTotal não configurado</div>
+                                        <div style="font-size: 11px; color: var(--text-secondary);">
+                                            Configure sua chave API em security_tools.py
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <!-- Action buttons -->
+                        <div class="action-buttons" style="margin-top: 12px;">
+                            ${sha256 && sha256 !== 'N/A' ? `
+                                <button class="action-btn" onclick="checkVirusTotalFile('${sha256}')">
+                                    <i class="fas fa-shield-virus"></i>
+                                    VirusTotal
+                                </button>
+                            ` : ''}
+                            
+                            <!-- PDF Analysis for PDF files -->
+                            ${fileType.toLowerCase().includes('pdf') && sha256 && sha256 !== 'N/A' ? `
+                                <button class="action-btn" onclick="analyzePDF('${sha256}', '${filename}')">
+                                    <i class="fas fa-file-pdf"></i>
+                                    Analisar PDF
+                                </button>
+                            ` : ''}
+                            
+                            <!-- Binary Analysis for executables -->
+                            ${['.exe', '.msi', '.bat', '.cmd', '.ps1', '.vbs', '.js'].some(ext => filename.toLowerCase().endsWith(ext)) && sha256 && sha256 !== 'N/A' ? `
+                                <button class="action-btn" onclick="analyzeBinary('${sha256}', '${filename}')">
+                                    <i class="fas fa-code"></i>
+                                    Análise Binária
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- Analysis containers -->
+                        ${fileType.toLowerCase().includes('pdf') ? `
+                            <div id="pdf-analysis-${index}" style="display: none; margin-top: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;"></div>
+                        ` : ''}
+                        
+                        ${['.exe', '.msi', '.bat', '.cmd', '.ps1', '.vbs', '.js'].some(ext => filename.toLowerCase().endsWith(ext)) ? `
+                            <div id="binary-analysis-${index}" style="display: none; margin-top: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px;"></div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            attachmentsDiv.innerHTML = html;
+        }
+
+        // Fallback para renderização de anexos
+        function renderAttachmentsContentFromLocal() {
+            const content = emailData?.analysis?.content_analysis || {};
+            const attachments = content.attachments || [];
+            
+            const attachmentDetails = attachments.map(att => ({
+                ...att,
+                file_type: att.content_type,
+                sha_1: 'N/A',
+                virustotal: { configure: true }
+            }));
+            
+            renderAttachmentsContent({
+                attachment_details: attachmentDetails
+            });
+        }
+
+        // Funções auxiliares para análises
+        async function lookupRDNS(ip) {
+            try {
+                showAlert(`Consultando rDNS para ${ip}...`, 'info');
+                const response = await fetch(`/api/security/rdns/${encodeURIComponent(ip)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const rdnsInfo = result.reverse_dns;
+                    if (rdnsInfo.error) {
+                        showAlert(`Erro no rDNS para ${ip}: ${rdnsInfo.error}`, 'error');
+                    } else {
+                        showAlert(`rDNS para ${ip}: ${rdnsInfo.hostname || 'Não encontrado'}`, 'success');
+                    }
+                } else {
+                    showAlert(`Erro na consulta: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        async function lookupDomainDNS(domain) {
+            try {
+                showAlert(`Consultando DNS para ${domain}...`, 'info');
+                const response = await fetch(`/api/security/dns/${encodeURIComponent(domain)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const dnsInfo = result.dns_results;
+                    if (dnsInfo.error) {
+                        showAlert(`Erro no DNS para ${domain}: ${dnsInfo.error}`, 'error');
+                    } else {
+                        const aRecords = dnsInfo.a_records || [];
+                        const mxRecords = dnsInfo.mx_records || [];
+                        showAlert(`DNS para ${domain}: ${aRecords.length} A records, ${mxRecords.length} MX records`, 'success');
+                    }
+                } else {
+                    showAlert(`Erro na consulta: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        async function lookupDomainWHOIS(domain) {
+            try {
+                showAlert(`Consultando WHOIS para ${domain}...`, 'info');
+                const response = await fetch(`/api/security/whois/${encodeURIComponent(domain)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const whoisInfo = result.whois_results;
+                    if (whoisInfo.error) {
+                        showAlert(`Erro no WHOIS para ${domain}: ${whoisInfo.error}`, 'error');
+                    } else {
+                        const registrar = whoisInfo.registrar || 'Desconhecido';
+                        const created = whoisInfo.creation_date || 'Desconhecido';
+                        showAlert(`WHOIS para ${domain}: Registrar: ${registrar}, Criado: ${created}`, 'success');
+                    }
+                } else {
+                    showAlert(`Erro na consulta: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        async function lookupURL(url) {
+            try {
+                showAlert(`Analisando URL: ${url.substring(0, 50)}...`, 'info');
+                // Aqui você pode implementar a análise de URL
+                showAlert(`Análise de URL: Funcionalidade em desenvolvimento`, 'info');
+            } catch (error) {
+                showAlert(`Erro ao analisar URL: ${error.message}`, 'error');
+            }
+        }
+
+        async function runAllSecurityChecks() {
+            try {
+                showAlert('Executando todas as verificações de segurança...', 'info');
+                const response = await fetch(`/api/emails/${emailId}/security/run-all`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Verificações de segurança executadas com sucesso!', 'success');
+                    setTimeout(() => {
+                        loadSecurityAnalysis();
+                    }, 1000);
+                } else {
+                    showAlert(`Erro ao executar verificações: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkVirusTotalFile(fileHash) {
+            try {
+                showAlert(`Consultando VirusTotal para hash ${fileHash.substring(0, 16)}...`, 'info');
+                const response = await fetch(`/api/security/virustotal/file/${fileHash}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const vt = result.virustotal_results;
+                    if (vt.error && vt.configure) {
+                        showAlert('Configure sua chave API do VirusTotal em security_tools.py', 'warning');
+                    } else if (vt.status === 'not_found') {
+                        showAlert('Arquivo não encontrado no VirusTotal', 'info');
+                    } else {
+                        const stats = vt.last_analysis_stats || {};
+                        const message = `VirusTotal: ${stats.malicious || 0} malicioso, ${stats.suspicious || 0} suspeito, ${stats.undetected || 0} não detectado`;
+                        
+                        if (stats.malicious > 0) {
+                            showAlert(message, 'error');
+                        } else if (stats.suspicious > 0) {
+                            showAlert(message, 'warning');
+                        } else {
+                            showAlert(message, 'success');
+                        }
+                    }
+                } else {
+                    showAlert(`Erro VirusTotal: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showAlert(`Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        async function analyzePDF(fileHash, filename) {
+            const containerId = `pdf-analysis-${Array.from(document.querySelectorAll('[id^="pdf-analysis-"]')).length - 1}`;
+            const container = document.getElementById(containerId);
+            
+            if (!container) return;
+            
+            container.style.display = 'block';
+            container.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; margin: 0 auto;"></div>';
+            
+            try {
+                showAlert(`Analisando PDF: ${filename}`, 'info');
+                // Aqui você pode implementar a análise de PDF
+                container.innerHTML = `
+                    <div style="color: var(--text-secondary); text-align: center; padding: 20px;">
+                        <i class="fas fa-file-pdf" style="font-size: 32px; margin-bottom: 16px; opacity: 0.5;"></i>
+                        <p>Análise de PDF para: ${escapeHtml(filename)}</p>
+                        <p style="font-size: 12px;">Funcionalidade de análise PDF está configurada.</p>
+                        <div style="display: flex; gap: 8px; justify-content: center; margin-top: 12px;">
+                            <button class="action-btn" onclick="checkVirusTotalFile('${fileHash}')">
+                                <i class="fas fa-shield-virus"></i>
+                                VirusTotal
+                            </button>
+                            <button class="action-btn" onclick="showAlert('Análise de metadados PDF disponível.', 'info')">
+                                <i class="fas fa-search"></i>
+                                Análise Local
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `
+                    <div style="color: var(--danger); text-align: center; padding: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Erro na análise PDF: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function analyzeBinary(fileHash, filename) {
+            const containerId = `binary-analysis-${Array.from(document.querySelectorAll('[id^="binary-analysis-"]')).length - 1}`;
+            const container = document.getElementById(containerId);
+            
+            if (!container) return;
+            
+            container.style.display = 'block';
+            container.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; margin: 0 auto;"></div>';
+            
+            try {
+                showAlert(`Analisando binário: ${filename}`, 'info');
+                // Aqui você pode implementar a análise binária
+                container.innerHTML = `
+                    <div style="color: var(--text-secondary); text-align: center; padding: 20px;">
+                        <i class="fas fa-code" style="font-size: 32px; margin-bottom: 16px; opacity: 0.5;"></i>
+                        <p>Análise Binária para: ${escapeHtml(filename)}</p>
+                        <p style="font-size: 12px;">Funcionalidade de análise binária está configurada.</p>
+                        <div style="display: flex; gap: 8px; justify-content: center; margin-top: 12px;">
+                            <button class="action-btn" onclick="checkVirusTotalFile('${fileHash}')">
+                                <i class="fas fa-shield-virus"></i>
+                                VirusTotal
+                            </button>
+                            <button class="action-btn" onclick="showAlert('Análise de strings e binwalk disponível.', 'info')">
+                                <i class="fas fa-search"></i>
+                                Análise Local
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `
+                    <div style="color: var(--danger); text-align: center; padding: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Erro na análise binária: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Funções auxiliares
+        function formatBytes(bytes) {
+            if (!bytes || bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function formatDateTime(dateString) {
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString;
+                return date.toLocaleString('pt-BR');
+            } catch (error) {
+                return dateString;
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
