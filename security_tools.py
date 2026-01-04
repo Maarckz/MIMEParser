@@ -18,6 +18,31 @@ import ipaddress
 import warnings
 from datetime import datetime
 
+
+# Simple .env loader (if python-dotenv is not installed)
+def _load_local_dotenv(path: str = None):
+    p = path or os.path.join(os.path.dirname(__file__), '..', '.env')
+    try:
+        if os.path.exists(p):
+            with open(p, 'r') as fh:
+                for line in fh:
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+                    if '=' not in line:
+                        continue
+                    k, v = line.split('=', 1)
+                    k = k.strip()
+                    v = v.strip().strip('"').strip("'")
+                    if k and v and k not in os.environ:
+                        os.environ[k] = v
+    except Exception:
+        pass
+
+
+# Load .env into environment
+_load_local_dotenv()
+
 # Suprimir avisos de SSL
 warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 
@@ -123,9 +148,23 @@ class SecurityAnalyzer:
         """Realiza consultas DNS completas para um domínio"""
         if not domain:
             return {'error': 'Domain is required', 'configure': True}
-        
+        # Prefer DNSDumpster always when API key is configured
+        api_key = os.environ.get('DNSDUMPSTER_API_KEY') or os.environ.get('DNSDUMPSTERKEY')
+        if api_key:
+            try:
+                api_url = f'https://api.dnsdumpster.com/domain/{domain}'
+                headers = {'X-API-Key': api_key}
+                resp = requests.get(api_url, headers=headers, timeout=20)
+                if resp.status_code == 200:
+                    return resp.json()
+                # If DNSDumpster returns an error, fall through to local resolver
+            except Exception as e:
+                # fall through to local resolver
+                pass
+
+        # Fallback to dnspython resolver if available
         if _MODULES.get('dns') is None:
-            return {'domain': domain, 'error': 'DNS module not available', 'configure': True}
+            return {'domain': domain, 'error': 'DNS module not available and DNSDumpster not configured', 'configure': True}
         
         try:
             resolver = _MODULES['dns'].Resolver()
@@ -309,9 +348,51 @@ class SecurityAnalyzer:
         """Consulta informações WHOIS de um domínio"""
         if not domain:
             return {'error': 'Domain is required', 'configure': True}
-        
+        # If python-whois is not available, try WHOISXML API if configured
         if _MODULES.get('whois') is None:
-            return {'domain': domain, 'error': 'WHOIS module not available', 'configure': True}
+            # Try system 'whois' command as a lightweight fallback
+            try:
+                out = subprocess.check_output(['whois', domain], stderr=subprocess.STDOUT, timeout=15)
+                raw = out.decode('utf-8', errors='ignore')
+                # Try to extract common date fields
+                def _find_date(key_patterns):
+                    for patt in key_patterns:
+                        m = re.search(rf"{patt}\s*[:\-]?\s*(.+)", raw, flags=re.IGNORECASE)
+                        if m:
+                            return m.group(1).strip()
+                    return None
+
+                creation = _find_date(['Creation Date', 'Created On', 'Registered On', 'Domain Registration Date'])
+                expiration = _find_date(['Registrar Registration Expiration Date', 'Expiry Date', 'Expiration Date', 'Registry Expiry Date'])
+                updated = _find_date(['Updated Date', 'Last Updated', 'Changed'])
+
+                result = {
+                    'domain': domain,
+                    'raw': raw,
+                    'creation_date': creation,
+                    'expiration_date': expiration,
+                    'updated_date': updated,
+                    'timestamp': datetime.now().isoformat()
+                }
+                return result
+            except Exception:
+                # If system whois not available, try WHOISXML API if provided
+                api_key = os.environ.get('WHOISXML_API_KEY') or os.environ.get('WHOISXMLKEY')
+                if api_key:
+                    try:
+                        url = 'https://www.whoisxmlapi.com/whoisserver/WhoisService'
+                        params = {
+                            'apiKey': api_key,
+                            'domainName': domain,
+                            'outputFormat': 'JSON'
+                        }
+                        resp = requests.get(url, params=params, timeout=15)
+                        if resp.status_code == 200:
+                            return resp.json()
+                        return {'domain': domain, 'error': f'WHOISXML API error: {resp.status_code}', 'text': resp.text}
+                    except Exception as e:
+                        return {'domain': domain, 'error': f'WHOIS lookup failed: {str(e)}', 'configure': False}
+                return {'domain': domain, 'error': 'WHOIS module and system whois not available', 'configure': True}
         
         try:
             w = _MODULES['whois'].whois(domain)

@@ -1,4 +1,5 @@
 from flask import jsonify, request, render_template, send_file
+import requests
 import os
 import traceback
 from datetime import datetime
@@ -255,6 +256,64 @@ def configure_routes(app, db, file_processor, socketio):
                 'success': False,
                 'error': str(e)
             }), 500
+
+
+    @app.route('/api/security/url/analyze', methods=['POST'])
+    def analyze_url_route():
+        """Analyze URL via URLhaus and urlscan and provide VirusTotal search link"""
+        try:
+            data = request.get_json() or {}
+            url = data.get('url') or request.form.get('url')
+            if not url:
+                return jsonify({'success': False, 'error': 'URL is required'}), 400
+
+            res = {
+                'url': url,
+                'urlhaus': None,
+                'urlscan': None,
+                'virustotal_search': None
+            }
+
+            # URLhaus
+            try:
+                ua_key = os.environ.get('URLHAUS_API_KEY')
+                headers = {}
+                if ua_key:
+                    headers['Auth-Key'] = ua_key
+                resp = requests.post('https://urlhaus-api.abuse.ch/v1/url/', headers=headers, data={'url': url}, timeout=15)
+                if resp.status_code == 200:
+                    res['urlhaus'] = resp.json()
+                else:
+                    res['urlhaus'] = {'error': f'URLhaus error {resp.status_code}'}
+            except Exception as e:
+                res['urlhaus'] = {'error': str(e)}
+
+            # urlscan
+            try:
+                headers = {'Content-Type': 'application/json'}
+                urlscan_key = os.environ.get('URLSCAN_API_KEY')
+                if urlscan_key:
+                    headers['api-key'] = urlscan_key
+                payload = {'url': url, 'visibility': 'private'}
+                resp = requests.post('https://urlscan.io/api/v1/scan', headers=headers, json=payload, timeout=15)
+                if resp.status_code in (200, 201):
+                    res['urlscan'] = resp.json()
+                else:
+                    res['urlscan'] = {'error': f'urlscan error {resp.status_code}', 'text': resp.text}
+            except Exception as e:
+                res['urlscan'] = {'error': str(e)}
+
+            # VirusTotal search link
+            try:
+                from urllib.parse import quote_plus
+                res['virustotal_search'] = f'https://www.virustotal.com/ui/search?query={quote_plus(url)}'
+            except Exception:
+                res['virustotal_search'] = None
+
+            return jsonify({'success': True, 'analysis': res})
+        except Exception as e:
+            print(f"[ERRO API] /api/security/url/analyze: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
     
     @app.route('/api/security/whois/<domain>')
     def get_whois_lookup(domain):
@@ -408,6 +467,71 @@ def configure_routes(app, db, file_processor, socketio):
                 'success': False,
                 'error': str(e)
             }), 500
+
+    @app.route('/api/emails/<int:email_id>/security/run-all', methods=['POST'])
+    def run_all_security(email_id):
+        """Run enrichment for all IOCs associated with an email"""
+        try:
+            email = db.get_email(email_id)
+            if not email:
+                return jsonify({'success': False, 'error': 'Email not found'}), 404
+
+            security_analyzer = SecurityAnalyzer()
+            analysis = email.get('analysis', {}) or {}
+            entities = analysis.get('entities', {}) or {}
+
+            results = {'email_id': email_id, 'ioc_enrichment': [], 'url_analyses': []}
+
+            # Domains
+            for domain in entities.get('domains', []):
+                try:
+                    dres = {
+                        'domain': domain,
+                        'dns': security_analyzer.dns_lookup(domain),
+                        'whois': security_analyzer.whois_lookup(domain)
+                    }
+                    results['ioc_enrichment'].append(dres)
+                except Exception as e:
+                    results['ioc_enrichment'].append({'domain': domain, 'error': str(e)})
+
+            # IPs
+            for ip in entities.get('ips', []):
+                try:
+                    ires = {
+                        'ip': ip,
+                        'rdns': security_analyzer.reverse_dns_lookup(ip)
+                    }
+                    results['ioc_enrichment'].append(ires)
+                except Exception as e:
+                    results['ioc_enrichment'].append({'ip': ip, 'error': str(e)})
+
+            # Hashes
+            for h in entities.get('hashes', []) + entities.get('files', []):
+                try:
+                    hres = {
+                        'hash': h,
+                        'virustotal': security_analyzer.check_virustotal_file(h)
+                    }
+                    results['ioc_enrichment'].append(hres)
+                except Exception as e:
+                    results['ioc_enrichment'].append({'hash': h, 'error': str(e)})
+
+            # URLs
+            for u in entities.get('urls', []):
+                try:
+                    ures = {
+                        'url': u,
+                        'virustotal': security_analyzer.check_virustotal_url(u) if hasattr(security_analyzer, 'check_virustotal_url') else None,
+                        'vt_search': f'https://www.virustotal.com/ui/search?query={u}'
+                    }
+                    results['url_analyses'].append(ures)
+                except Exception as e:
+                    results['url_analyses'].append({'url': u, 'error': str(e)})
+
+            return jsonify({'success': True, 'results': results})
+        except Exception as e:
+            print(f"[ERRO API] run-all: {e}")
+            return jsonify({'success': False, 'error': str(e)}), 500
     
     # ============ RESTANTE DAS ROTAS EXISTENTES ============
     
